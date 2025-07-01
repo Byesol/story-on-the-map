@@ -30,7 +30,7 @@ const MapContainer = () => {
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12', // 컬러 지도로 변경
+      style: 'mapbox://styles/mapbox/streets-v12',
       center: [CURRENT_USER_LOCATION.lng, CURRENT_USER_LOCATION.lat],
       zoom: 15,
       pitch: 0,
@@ -65,8 +65,9 @@ const MapContainer = () => {
 
     const userMarkerEl = document.createElement('div');
     userMarkerEl.className = 'user-location-marker';
+    userMarkerEl.style.zIndex = '1000'; // 높은 z-index로 사진 앞으로
     userMarkerEl.innerHTML = `
-      <div class="relative">
+      <div class="relative" style="z-index: 1000;">
         <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-blue-500 rounded-full opacity-30 animate-ping"></div>
       </div>

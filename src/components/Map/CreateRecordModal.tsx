@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -26,9 +25,28 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   const [hashtags, setHashtags] = useState('');
   const [image, setImage] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
+  const [locationAddress, setLocationAddress] = useState(currentLocation.address);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
+
+  // Mapbox Geocoding API를 사용하여 주소 가져오기
+  const getAddressFromCoordinates = async (lng: number, lat: number) => {
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&language=ko`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        return data.features[0].place_name;
+      }
+      return `위도: ${lat.toFixed(4)}, 경도: ${lng.toFixed(4)}`;
+    } catch (error) {
+      console.error('주소 가져오기 실패:', error);
+      return `위도: ${lat.toFixed(4)}, 경도: ${lng.toFixed(4)}`;
+    }
+  };
 
   useEffect(() => {
     if (isOpen && mapContainer.current && !map.current) {
@@ -42,19 +60,40 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       });
 
       // 드래그 가능한 마커 생성
-      marker.current = new mapboxgl.Marker({ draggable: true })
+      marker.current = new mapboxgl.Marker({ 
+        draggable: true,
+        color: '#ff6b35'
+      })
         .setLngLat([currentLocation.lng, currentLocation.lat])
         .addTo(map.current);
 
       // 마커 드래그 이벤트
-      marker.current.on('dragend', () => {
+      marker.current.on('dragend', async () => {
         if (marker.current) {
           const lngLat = marker.current.getLngLat();
+          const address = await getAddressFromCoordinates(lngLat.lng, lngLat.lat);
+          
           setSelectedLocation({
             lat: lngLat.lat,
             lng: lngLat.lng,
-            address: `위도: ${lngLat.lat.toFixed(4)}, 경도: ${lngLat.lng.toFixed(4)}`
+            address: address
           });
+          setLocationAddress(address);
+        }
+      });
+
+      // 지도 클릭 시 마커 이동
+      map.current.on('click', async (e) => {
+        if (marker.current && map.current) {
+          marker.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+          const address = await getAddressFromCoordinates(e.lngLat.lng, e.lngLat.lat);
+          
+          setSelectedLocation({
+            lat: e.lngLat.lat,
+            lng: e.lngLat.lng,
+            address: address
+          });
+          setLocationAddress(address);
         }
       });
     }
@@ -88,7 +127,10 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       memo: memo.trim(),
       hashtags: hashtags.split('#').filter(tag => tag.trim()).map(tag => tag.trim()),
       image,
-      location: selectedLocation
+      location: {
+        ...selectedLocation,
+        address: locationAddress
+      }
     };
 
     onSubmit(data);
@@ -98,6 +140,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setHashtags('');
     setImage(null);
     setSelectedLocation(currentLocation);
+    setLocationAddress(currentLocation.address);
   };
 
   const handleClose = () => {
@@ -105,6 +148,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setHashtags('');
     setImage(null);
     setSelectedLocation(currentLocation);
+    setLocationAddress(currentLocation.address);
     onClose();
   };
 
@@ -126,14 +170,14 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
             </div>
             <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
               <MapPin size={14} />
-              <span>마커를 드래그하여 정확한 위치를 선택하세요</span>
+              <span>마커를 드래그하거나 지도를 클릭하여 위치를 선택하세요</span>
             </div>
           </div>
 
           {/* 위치 정보 */}
           <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
             <MapPin size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-700">{selectedLocation.address}</span>
+            <span className="text-sm text-gray-700">{locationAddress}</span>
           </div>
 
           {/* 이미지 업로드 */}
