@@ -6,8 +6,11 @@ import { mockRecords, CURRENT_USER_LOCATION, Record } from '@/data/mockData';
 import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { MapControls } from './MapControls';
+import { FilterSheet, FilterOptions } from './FilterSheet';
+import { Filter } from 'lucide-react';
+import BottomNavigation from '@/components/Layout/BottomNavigation';
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMyk29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
 const MapContainer = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -17,6 +20,7 @@ const MapContainer = () => {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
   const [recordMarkers, setRecordMarkers] = useState<mapboxgl.Marker[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<Record[]>(mockRecords);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -36,7 +40,7 @@ const MapContainer = () => {
     map.current.on('load', () => {
       setMapLoaded(true);
       addUserLocationMarker();
-      addRecordMarkers();
+      addRecordMarkers(filteredRecords);
     });
 
     return () => {
@@ -45,6 +49,15 @@ const MapContainer = () => {
       map.current?.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (mapLoaded) {
+      // 기존 마커들 제거
+      recordMarkers.forEach(marker => marker.remove());
+      // 새로운 마커들 추가
+      addRecordMarkers(filteredRecords);
+    }
+  }, [filteredRecords, mapLoaded]);
 
   const addUserLocationMarker = () => {
     if (!map.current) return;
@@ -62,12 +75,12 @@ const MapContainer = () => {
     setUserLocationMarker(marker);
   };
 
-  const addRecordMarkers = () => {
+  const addRecordMarkers = (records: Record[]) => {
     if (!map.current) return;
 
     const markers: mapboxgl.Marker[] = [];
 
-    mockRecords.forEach((record) => {
+    records.forEach((record) => {
       const markerEl = document.createElement('div');
       markerEl.className = 'record-marker';
       markerEl.innerHTML = `
@@ -110,12 +123,44 @@ const MapContainer = () => {
     // TODO: 실제 기록 생성 로직 구현
   };
 
+  const handleFilterChange = (filters: FilterOptions) => {
+    let filtered = mockRecords;
+
+    if (filters.showMyRecordsOnly) {
+      // 현재 사용자를 김다은(id: "1")으로 가정
+      filtered = filtered.filter(record => record.userId === "1");
+    }
+
+    if (filters.hashtag) {
+      filtered = filtered.filter(record => 
+        record.hashtags.some(tag => 
+          tag.toLowerCase().includes(filters.hashtag!.toLowerCase())
+        )
+      );
+    }
+
+    if (filters.author) {
+      filtered = filtered.filter(record => 
+        record.userName.toLowerCase().includes(filters.author!.toLowerCase())
+      );
+    }
+
+    setFilteredRecords(filtered);
+  };
+
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
       
       {mapLoaded && (
         <>
+          {/* 필터 버튼 */}
+          <FilterSheet onFilterChange={handleFilterChange}>
+            <button className="absolute top-4 left-4 w-12 h-12 bg-white text-gray-700 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center z-10">
+              <Filter size={20} />
+            </button>
+          </FilterSheet>
+
           <MapControls 
             onCreateRecord={() => setShowCreateModal(true)}
             onMoveToCurrentLocation={moveToCurrentLocation}
@@ -135,6 +180,8 @@ const MapContainer = () => {
           />
         </>
       )}
+      
+      <BottomNavigation />
     </div>
   );
 };
