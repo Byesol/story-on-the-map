@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -10,7 +9,7 @@ import { FilterSheet, FilterOptions } from './FilterSheet';
 import { Filter } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMyk29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
 const MapContainer = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
