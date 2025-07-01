@@ -1,10 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MapPin, Camera } from 'lucide-react';
+import mapboxgl from 'mapbox-gl';
+
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
 interface CreateRecordModalProps {
   isOpen: boolean;
@@ -22,6 +25,47 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   const [memo, setMemo] = useState('');
   const [hashtags, setHashtags] = useState('');
   const [image, setImage] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState(currentLocation);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const marker = useRef<mapboxgl.Marker | null>(null);
+
+  useEffect(() => {
+    if (isOpen && mapContainer.current && !map.current) {
+      mapboxgl.accessToken = MAPBOX_TOKEN;
+      
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [currentLocation.lng, currentLocation.lat],
+        zoom: 15,
+      });
+
+      // 드래그 가능한 마커 생성
+      marker.current = new mapboxgl.Marker({ draggable: true })
+        .setLngLat([currentLocation.lng, currentLocation.lat])
+        .addTo(map.current);
+
+      // 마커 드래그 이벤트
+      marker.current.on('dragend', () => {
+        if (marker.current) {
+          const lngLat = marker.current.getLngLat();
+          setSelectedLocation({
+            lat: lngLat.lat,
+            lng: lngLat.lng,
+            address: `위도: ${lngLat.lat.toFixed(4)}, 경도: ${lngLat.lng.toFixed(4)}`
+          });
+        }
+      });
+    }
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [isOpen]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,7 +88,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       memo: memo.trim(),
       hashtags: hashtags.split('#').filter(tag => tag.trim()).map(tag => tag.trim()),
       image,
-      location: currentLocation
+      location: selectedLocation
     };
 
     onSubmit(data);
@@ -53,11 +97,20 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setMemo('');
     setHashtags('');
     setImage(null);
+    setSelectedLocation(currentLocation);
+  };
+
+  const handleClose = () => {
+    setMemo('');
+    setHashtags('');
+    setImage(null);
+    setSelectedLocation(currentLocation);
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto">
+    <Dialog open={isOpen} onOpenChange={handleClose}>
+      <DialogContent className="max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-400 to-pink-500 bg-clip-text text-transparent">
             새 기록 작성
@@ -65,10 +118,22 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         </DialogHeader>
         
         <div className="space-y-4">
+          {/* 위치 선택 지도 */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">위치 선택</label>
+            <div className="h-48 rounded-lg overflow-hidden border">
+              <div ref={mapContainer} className="w-full h-full" />
+            </div>
+            <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded text-sm text-gray-600">
+              <MapPin size={14} />
+              <span>마커를 드래그하여 정확한 위치를 선택하세요</span>
+            </div>
+          </div>
+
           {/* 위치 정보 */}
           <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
             <MapPin size={16} className="text-gray-600" />
-            <span className="text-sm text-gray-700">{currentLocation.address}</span>
+            <span className="text-sm text-gray-700">{selectedLocation.address}</span>
           </div>
 
           {/* 이미지 업로드 */}
@@ -129,7 +194,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
           <div className="flex space-x-2 pt-4">
             <Button 
               variant="outline" 
-              onClick={onClose}
+              onClick={handleClose}
               className="flex-1"
             >
               취소

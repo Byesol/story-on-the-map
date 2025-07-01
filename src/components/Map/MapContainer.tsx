@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -20,6 +21,7 @@ const MapContainer = () => {
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
   const [recordMarkers, setRecordMarkers] = useState<mapboxgl.Marker[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<Record[]>(mockRecords);
+  const [allRecords, setAllRecords] = useState<Record[]>(mockRecords);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -28,7 +30,7 @@ const MapContainer = () => {
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/streets-v12', // 컬러 지도로 변경
       center: [CURRENT_USER_LOCATION.lng, CURRENT_USER_LOCATION.lat],
       zoom: 15,
       pitch: 0,
@@ -64,7 +66,10 @@ const MapContainer = () => {
     const userMarkerEl = document.createElement('div');
     userMarkerEl.className = 'user-location-marker';
     userMarkerEl.innerHTML = `
-      <div class="w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg animate-pulse"></div>
+      <div class="relative">
+        <div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-blue-500 rounded-full opacity-30 animate-ping"></div>
+      </div>
     `;
 
     const marker = new mapboxgl.Marker(userMarkerEl)
@@ -87,7 +92,10 @@ const MapContainer = () => {
           <div class="w-12 h-12 rounded-full overflow-hidden border-3 border-white shadow-lg hover:scale-110 transition-transform duration-200">
             <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
           </div>
-          <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-orange-400 to-pink-500 rounded-full border-2 border-white flex items-center justify-center">
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+            <span class="text-white text-xs font-bold">❤</span>
+          </div>
+          <div class="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-r from-orange-400 to-pink-500 rounded-full border border-white flex items-center justify-center">
             <span class="text-white text-xs font-bold">${record.likes}</span>
           </div>
         </div>
@@ -118,12 +126,32 @@ const MapContainer = () => {
 
   const handleCreateRecord = (data: any) => {
     console.log('새 기록 생성:', data);
+    
+    // 새 기록 생성
+    const newRecord: Record = {
+      id: `new-${Date.now()}`,
+      userId: "1", // 현재 사용자 ID
+      userName: "김다은", // 현재 사용자 이름
+      location: data.location,
+      image: data.image,
+      memo: data.memo,
+      hashtags: data.hashtags,
+      createdAt: new Date().toISOString().split('T')[0],
+      likes: 0,
+      comments: [],
+      isLiked: false
+    };
+    
+    // 기록 목록에 추가
+    const updatedRecords = [...allRecords, newRecord];
+    setAllRecords(updatedRecords);
+    setFilteredRecords(updatedRecords);
+    
     setShowCreateModal(false);
-    // TODO: 실제 기록 생성 로직 구현
   };
 
   const handleFilterChange = (filters: FilterOptions) => {
-    let filtered = mockRecords;
+    let filtered = allRecords;
 
     if (filters.showMyRecordsOnly) {
       // 현재 사용자를 김다은(id: "1")으로 가정
@@ -145,6 +173,16 @@ const MapContainer = () => {
     }
 
     setFilteredRecords(filtered);
+  };
+
+  const updateRecordInList = (updatedRecord: Record) => {
+    const updatedAllRecords = allRecords.map(record => 
+      record.id === updatedRecord.id ? updatedRecord : record
+    );
+    setAllRecords(updatedAllRecords);
+    setFilteredRecords(updatedAllRecords.filter(record => 
+      filteredRecords.some(fr => fr.id === record.id) || record.id === updatedRecord.id
+    ));
   };
 
   return (
@@ -169,6 +207,7 @@ const MapContainer = () => {
             record={selectedRecord}
             isOpen={!!selectedRecord}
             onClose={() => setSelectedRecord(null)}
+            onUpdateRecord={updateRecordInList}
           />
           
           <CreateRecordModal

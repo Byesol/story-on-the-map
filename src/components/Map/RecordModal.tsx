@@ -9,28 +9,64 @@ interface RecordModalProps {
   record: Record | null;
   isOpen: boolean;
   onClose: () => void;
+  onUpdateRecord: (record: Record) => void;
 }
 
 export const RecordModal: React.FC<RecordModalProps> = ({
   record,
   isOpen,
-  onClose
+  onClose,
+  onUpdateRecord
 }) => {
   const [isLiked, setIsLiked] = useState(record?.isLiked || false);
   const [likeCount, setLikeCount] = useState(record?.likes || 0);
   const [comment, setComment] = useState('');
+  const [comments, setComments] = useState(record?.comments || []);
 
   if (!record) return null;
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    const newIsLiked = !isLiked;
+    const newLikeCount = newIsLiked ? likeCount + 1 : likeCount - 1;
+    
+    setIsLiked(newIsLiked);
+    setLikeCount(newLikeCount);
+
+    // 업데이트된 기록을 부모 컴포넌트에 전달
+    const updatedRecord = {
+      ...record,
+      likes: newLikeCount,
+      isLiked: newIsLiked
+    };
+    onUpdateRecord(updatedRecord);
   };
 
   const handleComment = () => {
     if (comment.trim()) {
-      console.log('댓글 작성:', comment);
+      const newComment = {
+        id: `comment-${Date.now()}`,
+        userId: "1", // 현재 사용자 ID
+        userName: "김다은", // 현재 사용자 이름
+        content: comment.trim(),
+        createdAt: new Date().toLocaleString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      };
+
+      const updatedComments = [...comments, newComment];
+      setComments(updatedComments);
       setComment('');
+
+      // 업데이트된 기록을 부모 컴포넌트에 전달
+      const updatedRecord = {
+        ...record,
+        comments: updatedComments
+      };
+      onUpdateRecord(updatedRecord);
     }
   };
 
@@ -95,16 +131,16 @@ export const RecordModal: React.FC<RecordModalProps> = ({
               </button>
               <div className="flex items-center space-x-1 text-gray-500">
                 <MessageCircle size={20} />
-                <span className="text-sm">{record.comments.length}</span>
+                <span className="text-sm">{comments.length}</span>
               </div>
             </div>
           </div>
 
           {/* 댓글 목록 */}
-          {record.comments.length > 0 && (
+          {comments.length > 0 && (
             <div className="space-y-2 border-t pt-2">
               <p className="font-semibold text-sm text-gray-700">댓글</p>
-              {record.comments.map((comment) => (
+              {comments.map((comment) => (
                 <div key={comment.id} className="space-y-1">
                   <div className="flex items-start space-x-2">
                     <span className="font-semibold text-sm text-gray-900">
