@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/08ecd2b4-ae06-463f-85ce-14804f7aed55
+**URL**:https://story-on-the-map.lovable.app/
 
 
 # 📌 기획서: 공간 기반 SNS — “지도 위에 남기는 나의 기록, 우리의 이야기”
