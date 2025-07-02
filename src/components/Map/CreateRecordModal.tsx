@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { MapPin, Camera, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car } from 'lucide-react';
+import { MapPin, Camera, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car, Activity } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
@@ -23,7 +23,8 @@ const iconOptions = [
   { id: 'cafe', icon: Coffee, label: '카페', color: 'text-amber-600' },
   { id: 'entertainment', icon: Music, label: '놀거리', color: 'text-purple-500' },
   { id: 'snack', icon: Sandwich, label: '간식', color: 'text-pink-500' },
-  { id: 'walk', icon: Car, label: '산책', color: 'text-teal-500' }
+  { id: 'walk', icon: Car, label: '산책', color: 'text-teal-500' },
+  { id: 'running', icon: Activity, label: '런닝', color: 'text-red-500' }
 ];
 
 export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
@@ -38,10 +39,12 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
   const [locationAddress, setLocationAddress] = useState(currentLocation.address);
   const [selectedIcon, setSelectedIcon] = useState(iconOptions[0].id);
+  const [isRunning, setIsRunning] = useState(false);
+  const [distance, setDistance] = useState('');
+  const [duration, setDuration] = useState('');
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
-  const [mapReady, setMapReady] = useState(false);
 
   // Mapbox Geocoding API를 사용하여 주소 가져오기
   const getAddressFromCoordinates = async (lng: number, lat: number) => {
@@ -69,8 +72,13 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     }
   }, [isOpen, currentLocation]);
 
+  // 선택된 아이콘이 런닝일 때 런닝 모드 자동 활성화
   useEffect(() => {
-    if (isOpen && mapContainer.current && !mapReady) {
+    setIsRunning(selectedIcon === 'running');
+  }, [selectedIcon]);
+
+  useEffect(() => {
+    if (isOpen && mapContainer.current) {
       // 기존 맵 정리
       if (map.current) {
         map.current.remove();
@@ -96,8 +104,6 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
           });
 
           map.current.on('load', () => {
-            setMapReady(true);
-            
             // 드래그 가능한 마커 생성
             if (map.current) {
               marker.current = new mapboxgl.Marker({ 
@@ -141,11 +147,11 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         } catch (error) {
           console.error('맵박스 초기화 실패:', error);
         }
-      }, 200);
+      }, 300);
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen, currentLocation, mapReady]);
+  }, [isOpen, currentLocation]);
 
   // 모달이 닫힐 때 정리
   useEffect(() => {
@@ -158,7 +164,6 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         marker.current.remove();
         marker.current = null;
       }
-      setMapReady(false);
     }
   }, [isOpen]);
 
@@ -179,6 +184,11 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       return;
     }
 
+    if (isRunning && (!distance.trim() || !duration.trim())) {
+      alert('런닝 기록의 경우 거리와 시간을 입력해주세요.');
+      return;
+    }
+
     const data = {
       memo: memo.trim(),
       hashtags: hashtags.split('#').filter(tag => tag.trim()).map(tag => tag.trim()),
@@ -187,7 +197,10 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       location: {
         ...selectedLocation,
         address: locationAddress
-      }
+      },
+      isRunning,
+      distance: isRunning ? parseFloat(distance) : undefined,
+      duration: isRunning ? duration.trim() : undefined
     };
 
     onSubmit(data);
@@ -199,6 +212,9 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setSelectedIcon(iconOptions[0].id);
     setSelectedLocation(currentLocation);
     setLocationAddress(currentLocation.address);
+    setIsRunning(false);
+    setDistance('');
+    setDuration('');
   };
 
   const handleClose = () => {
@@ -208,6 +224,9 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setSelectedIcon(iconOptions[0].id);
     setSelectedLocation(currentLocation);
     setLocationAddress(currentLocation.address);
+    setIsRunning(false);
+    setDistance('');
+    setDuration('');
     onClose();
   };
 
@@ -263,6 +282,39 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
               })}
             </div>
           </div>
+
+          {/* 런닝 기록 추가 정보 */}
+          {isRunning && (
+            <div className="space-y-3 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="text-sm font-medium text-green-800 flex items-center space-x-2">
+                <Activity size={16} />
+                <span>런닝 인증</span>
+              </h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">거리 (km)</label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={distance}
+                    onChange={(e) => setDistance(e.target.value)}
+                    placeholder="5.0"
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">시간</label>
+                  <Input
+                    type="text"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    placeholder="25:30"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 이미지 업로드 */}
           <div className="space-y-2">

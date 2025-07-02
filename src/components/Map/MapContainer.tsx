@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -20,12 +21,16 @@ const iconMap = {
   cafe: Coffee,
   entertainment: Music,
   snack: Sandwich,
-  walk: Car
+  walk: Car,
+  running: Car // 런닝 아이콘 추가
 };
 
 // Extended Record type with icon property
 interface ExtendedRecord extends Record {
   icon?: string;
+  isRunning?: boolean;
+  distance?: number;
+  duration?: string;
 }
 
 const MapContainer = () => {
@@ -40,6 +45,7 @@ const MapContainer = () => {
   const [currentZoom, setCurrentZoom] = useState(12);
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationMarker, setAnimationMarker] = useState<mapboxgl.Marker | null>(null);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const location = useLocation();
   
   // URL에서 selectedRecordId 파라미터 확인
@@ -79,7 +85,7 @@ const MapContainer = () => {
       setMapLoaded(true);
       addUserLocationMarker();
       addRecordMarkers(filteredRecords);
-      addMyRecordPaths();
+      // 정적 경로 제거 - addMyRecordPaths() 호출 제거
     });
 
     // 줌 레벨 변경 감지
@@ -132,8 +138,7 @@ const MapContainer = () => {
       recordMarkers.forEach(marker => marker.remove());
       // 새로운 마커들 추가
       addRecordMarkers(filteredRecords);
-      // 경로 업데이트
-      addMyRecordPaths();
+      // 정적 경로 제거 - addMyRecordPaths() 호출 제거
     }
   }, [filteredRecords, mapLoaded]);
 
@@ -179,61 +184,6 @@ const MapContainer = () => {
     setUserLocationMarker(marker);
   };
 
-  const addMyRecordPaths = () => {
-    if (!map.current || !mapLoaded) return;
-
-    // 기존 경로 제거
-    pathLines.forEach(layerId => {
-      if (map.current?.getLayer(layerId)) {
-        map.current.removeLayer(layerId);
-        map.current.removeSource(layerId);
-      }
-    });
-
-    // 내 기록들만 필터링하고 날짜순 정렬
-    const myRecords = filteredRecords
-      .filter(record => record.userId === "1")
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-    if (myRecords.length < 2) return;
-
-    const coordinates = myRecords.map(record => [record.location.lng, record.location.lat]);
-    const lineId = 'my-path-line';
-
-    // 감성적인 곡선 경로 생성
-    if (map.current && !map.current.getSource(lineId)) {
-      map.current.addSource(lineId, {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: coordinates
-          }
-        }
-      });
-
-      map.current.addLayer({
-        id: lineId,
-        type: 'line',
-        source: lineId,
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#ff6b6b',
-          'line-width': 3,
-          'line-opacity': 0.8,
-          'line-dasharray': [2, 2]
-        }
-      });
-
-      setPathLines([lineId]);
-    }
-  };
-
   const getIconSvg = (iconType: string) => {
     const iconSvgMap: { [key: string]: string } = {
       food: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
@@ -242,7 +192,8 @@ const MapContainer = () => {
       cafe: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v20M14 2v20M4 7h20M4 17h20"/></svg>',
       entertainment: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
       snack: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3"/><path d="M12 19H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3.83"/><path d="m3 11 7.77-6.04a2 2 0 0 1 2.46 0L21 11H3Z"/><path d="M12.97 19.77 7 15h12.5l-3.75 4.5a2 2 0 0 1-2.78.27Z"/></svg>',
-      walk: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>'
+      walk: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>',
+      running: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3z"/><path d="M12 5v14l-4-4"/><path d="M12 19l4-4"/></svg>'
     };
     return iconSvgMap[iconType] || iconSvgMap.food;
   };
@@ -284,6 +235,12 @@ const MapContainer = () => {
           ${isToday ? `
             <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
               TODAY
+            </div>
+          ` : ''}
+          
+          ${record.isRunning ? `
+            <div class="absolute -top-3 -right-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+              RUN
             </div>
           ` : ''}
           
@@ -347,9 +304,13 @@ const MapContainer = () => {
 
     setAnimationMarker(animMarker);
 
-    // 각 기록을 순서대로 방문
+    // 경로 생성을 위한 좌표 배열
+    const coordinates: [number, number][] = [[firstRecord.location.lng, firstRecord.location.lat]];
+    
+    // 각 기록을 순서대로 방문하며 경로 생성
     for (let i = 1; i < myRecords.length; i++) {
       const record = myRecords[i];
+      coordinates.push([record.location.lng, record.location.lat]);
       
       // 마커 이동
       animMarker.setLngLat([record.location.lng, record.location.lat]);
@@ -361,9 +322,57 @@ const MapContainer = () => {
         duration: 2000
       });
 
+      // 경로 업데이트
+      const pathId = 'animated-path';
+      if (map.current.getSource(pathId)) {
+        (map.current.getSource(pathId) as mapboxgl.GeoJSONSource).setData({
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: coordinates
+          }
+        });
+      } else {
+        map.current.addSource(pathId, {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: coordinates
+            }
+          }
+        });
+
+        map.current.addLayer({
+          id: pathId,
+          type: 'line',
+          source: pathId,
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#ff6b6b',
+            'line-width': 4,
+            'line-opacity': 0.8
+          }
+        });
+      }
+
       // 잠시 대기
       await new Promise(resolve => setTimeout(resolve, 2500));
     }
+
+    // 잠시 경로를 보여준 후 제거
+    setTimeout(() => {
+      if (map.current?.getLayer('animated-path')) {
+        map.current.removeLayer('animated-path');
+        map.current.removeSource('animated-path');
+      }
+    }, 3000);
 
     // 애니메이션 마커 제거
     animMarker.remove();
@@ -375,6 +384,10 @@ const MapContainer = () => {
     if (animationMarker) {
       animationMarker.remove();
       setAnimationMarker(null);
+    }
+    if (map.current?.getLayer('animated-path')) {
+      map.current.removeLayer('animated-path');
+      map.current.removeSource('animated-path');
     }
     setIsAnimating(false);
   };
@@ -404,7 +417,10 @@ const MapContainer = () => {
       createdAt: new Date().toISOString().split('T')[0],
       likes: 0,
       comments: [],
-      isLiked: false
+      isLiked: false,
+      isRunning: data.isRunning,
+      distance: data.distance,
+      duration: data.duration
     };
     
     // 기록 목록에 추가
@@ -416,10 +432,10 @@ const MapContainer = () => {
   };
 
   const handleFilterChange = (filters: FilterOptions) => {
+    setFilterOptions(filters);
     let filtered = allRecords;
 
     if (filters.showMyRecordsOnly) {
-      // 현재 사용자를 김다은(id: "1")으로 가정
       filtered = filtered.filter(record => record.userId === "1");
     }
 
@@ -451,6 +467,11 @@ const MapContainer = () => {
       record.id === updatedRecord.id ? updatedRecord : record
     );
     setFilteredRecords(updatedFilteredRecords);
+  };
+
+  const handleAuthorFilter = (authorName: string) => {
+    const newFilters = { ...filterOptions, author: authorName };
+    handleFilterChange(newFilters);
   };
 
   return (
@@ -499,6 +520,7 @@ const MapContainer = () => {
             isOpen={!!selectedRecord}
             onClose={() => setSelectedRecord(null)}
             onUpdateRecord={updateRecordInList}
+            onAuthorFilter={handleAuthorFilter}
           />
           
           <CreateRecordModal

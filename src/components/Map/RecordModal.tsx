@@ -3,20 +3,28 @@ import React, { useState, useEffect } from 'react';
 import { Record } from '@/data/mockData';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Heart, MessageCircle, MapPin } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Activity, Clock, Route } from 'lucide-react';
+
+interface ExtendedRecord extends Record {
+  isRunning?: boolean;
+  distance?: number;
+  duration?: string;
+}
 
 interface RecordModalProps {
-  record: Record | null;
+  record: ExtendedRecord | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdateRecord: (record: Record) => void;
+  onUpdateRecord: (record: ExtendedRecord) => void;
+  onAuthorFilter: (authorName: string) => void;
 }
 
 export const RecordModal: React.FC<RecordModalProps> = ({
   record,
   isOpen,
   onClose,
-  onUpdateRecord
+  onUpdateRecord,
+  onAuthorFilter
 }) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -79,6 +87,11 @@ export const RecordModal: React.FC<RecordModalProps> = ({
     }
   };
 
+  const handleAuthorClick = () => {
+    onAuthorFilter(record.userName);
+    onClose();
+  };
+
   const today = new Date().toISOString().split('T')[0];
   const isToday = record.createdAt === today;
 
@@ -95,17 +108,48 @@ export const RecordModal: React.FC<RecordModalProps> = ({
             </div>
             <div className="flex-1">
               <div className="flex items-center space-x-2">
-                <p className="font-semibold text-gray-900">{record.userName}</p>
+                <button
+                  onClick={handleAuthorClick}
+                  className="font-semibold text-gray-900 hover:text-orange-500 transition-colors cursor-pointer"
+                >
+                  {record.userName}
+                </button>
                 {record.userId === "1" && (
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">나</span>
                 )}
                 {isToday && (
                   <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full animate-pulse">오늘</span>
                 )}
+                {record.isRunning && (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full flex items-center space-x-1">
+                    <Activity size={10} />
+                    <span>런닝</span>
+                  </span>
+                )}
               </div>
               <p className="text-sm text-gray-500">{record.createdAt}</p>
             </div>
           </div>
+
+          {/* 런닝 정보 */}
+          {record.isRunning && (record.distance || record.duration) && (
+            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+              <div className="flex items-center space-x-4">
+                {record.distance && (
+                  <div className="flex items-center space-x-1 text-green-700">
+                    <Route size={16} />
+                    <span className="text-sm font-medium">{record.distance}km</span>
+                  </div>
+                )}
+                {record.duration && (
+                  <div className="flex items-center space-x-1 text-green-700">
+                    <Clock size={16} />
+                    <span className="text-sm font-medium">{record.duration}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 이미지 */}
           <div className="w-full h-64 rounded-lg overflow-hidden">
