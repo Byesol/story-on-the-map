@@ -3,10 +3,10 @@ import React, { useState, useMemo } from 'react';
 import { Heart, MessageCircle, MapPin, Navigation } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 import { mockRecords, CURRENT_USER_LOCATION, mockUsers } from '@/data/mockData';
-import { RecordModal } from '@/components/Map/RecordModal';
+import { useNavigate } from 'react-router-dom';
 
 const Explore = () => {
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const navigate = useNavigate();
 
   // 현재 위치 기준으로 거리 계산 및 정렬
   const sortedRecords = useMemo(() => {
@@ -34,9 +34,8 @@ const Explore = () => {
     return `${km.toFixed(1)}km`;
   };
 
-  const updateRecordInList = (updatedRecord: any) => {
-    // 실제로는 상태 업데이트가 필요하지만, 여기서는 모달만 닫기
-    setSelectedRecord(null);
+  const handleRecordClick = (recordId: string) => {
+    navigate(`/?recordId=${recordId}`);
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -62,7 +61,7 @@ const Explore = () => {
             return (
               <div
                 key={record.id}
-                onClick={() => setSelectedRecord(record)}
+                onClick={() => handleRecordClick(record.id)}
                 className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
               >
                 <div className="relative">
@@ -138,13 +137,6 @@ const Explore = () => {
           })}
         </div>
       </div>
-
-      <RecordModal
-        record={selectedRecord}
-        isOpen={!!selectedRecord}
-        onClose={() => setSelectedRecord(null)}
-        onUpdateRecord={updateRecordInList}
-      />
 
       <BottomNavigation />
     </div>

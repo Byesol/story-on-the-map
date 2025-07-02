@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
+  const [mapReady, setMapReady] = useState(false);
 
   // Mapbox Geocoding API를 사용하여 주소 가져오기
   const getAddressFromCoordinates = async (lng: number, lat: number) => {
@@ -59,21 +61,33 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     }
   };
 
+  // 모달이 열릴 때 위치 초기화
   useEffect(() => {
-    if (isOpen && mapContainer.current) {
+    if (isOpen) {
+      setSelectedLocation(currentLocation);
+      setLocationAddress(currentLocation.address);
+    }
+  }, [isOpen, currentLocation]);
+
+  useEffect(() => {
+    if (isOpen && mapContainer.current && !mapReady) {
       // 기존 맵 정리
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
+      if (marker.current) {
+        marker.current.remove();
+        marker.current = null;
+      }
 
       // 약간의 지연 후 맵 초기화
-      setTimeout(() => {
-        if (!mapContainer.current) return;
-        
-        mapboxgl.accessToken = MAPBOX_TOKEN;
+      const timer = setTimeout(() => {
+        if (!mapContainer.current || !isOpen) return;
         
         try {
+          mapboxgl.accessToken = MAPBOX_TOKEN;
+          
           map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: 'mapbox://styles/mapbox/streets-v12',
@@ -81,26 +95,32 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
             zoom: 15,
           });
 
-          // 드래그 가능한 마커 생성
-          marker.current = new mapboxgl.Marker({ 
-            draggable: true,
-            color: '#ff6b35'
-          })
-            .setLngLat([currentLocation.lng, currentLocation.lat])
-            .addTo(map.current);
+          map.current.on('load', () => {
+            setMapReady(true);
+            
+            // 드래그 가능한 마커 생성
+            if (map.current) {
+              marker.current = new mapboxgl.Marker({ 
+                draggable: true,
+                color: '#ff6b35'
+              })
+                .setLngLat([currentLocation.lng, currentLocation.lat])
+                .addTo(map.current);
 
-          // 마커 드래그 이벤트
-          marker.current.on('dragend', async () => {
-            if (marker.current) {
-              const lngLat = marker.current.getLngLat();
-              const address = await getAddressFromCoordinates(lngLat.lng, lngLat.lat);
-              
-              setSelectedLocation({
-                lat: lngLat.lat,
-                lng: lngLat.lng,
-                address: address
+              // 마커 드래그 이벤트
+              marker.current.on('dragend', async () => {
+                if (marker.current) {
+                  const lngLat = marker.current.getLngLat();
+                  const address = await getAddressFromCoordinates(lngLat.lng, lngLat.lat);
+                  
+                  setSelectedLocation({
+                    lat: lngLat.lat,
+                    lng: lngLat.lng,
+                    address: address
+                  });
+                  setLocationAddress(address);
+                }
               });
-              setLocationAddress(address);
             }
           });
 
@@ -121,16 +141,26 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         } catch (error) {
           console.error('맵박스 초기화 실패:', error);
         }
-      }, 100);
-    }
+      }, 200);
 
-    return () => {
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, currentLocation, mapReady]);
+
+  // 모달이 닫힐 때 정리
+  useEffect(() => {
+    if (!isOpen) {
       if (map.current) {
         map.current.remove();
         map.current = null;
       }
-    };
-  }, [isOpen, currentLocation]);
+      if (marker.current) {
+        marker.current.remove();
+        marker.current = null;
+      }
+      setMapReady(false);
+    }
+  }, [isOpen]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -194,7 +224,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
           {/* 위치 선택 지도 */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700">위치 선택</label>
-            <div className="h-48 rounded-lg overflow-hidden border">
+            <div className="h-48 rounded-lg overflow-hidden border bg-gray-100">
               <div ref={mapContainer} className="w-full h-full" />
             </div>
             <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded text-sm text-gray-600">

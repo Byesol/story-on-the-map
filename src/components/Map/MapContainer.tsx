@@ -6,9 +6,10 @@ import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { MapControls } from './MapControls';
 import { FilterSheet, FilterOptions } from './FilterSheet';
-import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car } from 'lucide-react';
+import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car, MapPin, Play, Square } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 import { useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
@@ -36,6 +37,9 @@ const MapContainer = () => {
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
   const [recordMarkers, setRecordMarkers] = useState<mapboxgl.Marker[]>([]);
   const [pathLines, setPathLines] = useState<string[]>([]);
+  const [currentZoom, setCurrentZoom] = useState(12);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationMarker, setAnimationMarker] = useState<mapboxgl.Marker | null>(null);
   const location = useLocation();
   
   // URL에서 selectedRecordId 파라미터 확인
@@ -78,9 +82,19 @@ const MapContainer = () => {
       addMyRecordPaths();
     });
 
+    // 줌 레벨 변경 감지
+    map.current.on('zoom', () => {
+      if (map.current) {
+        const zoom = map.current.getZoom();
+        setCurrentZoom(zoom);
+        updateMarkerSizes(zoom);
+      }
+    });
+
     return () => {
       recordMarkers.forEach(marker => marker.remove());
       userLocationMarker?.remove();
+      animationMarker?.remove();
       if (map.current) {
         // 경로 레이어 제거
         pathLines.forEach(layerId => {
@@ -123,12 +137,31 @@ const MapContainer = () => {
     }
   }, [filteredRecords, mapLoaded]);
 
+  const updateMarkerSizes = (zoom: number) => {
+    const scaleFactor = Math.max(0.3, Math.min(1.2, zoom / 12));
+    
+    recordMarkers.forEach(marker => {
+      const element = marker.getElement();
+      if (element) {
+        element.style.transform = `scale(${scaleFactor})`;
+      }
+    });
+
+    // 사용자 위치 마커도 스케일 조정
+    if (userLocationMarker) {
+      const element = userLocationMarker.getElement();
+      if (element) {
+        element.style.transform = `scale(${scaleFactor})`;
+      }
+    }
+  };
+
   const addUserLocationMarker = () => {
     if (!map.current) return;
 
     const userMarkerEl = document.createElement('div');
     userMarkerEl.className = 'user-location-marker';
-    userMarkerEl.style.zIndex = '3000'; // 더 높은 z-index
+    userMarkerEl.style.zIndex = '3000';
     userMarkerEl.innerHTML = `
       <div class="relative" style="z-index: 3000;">
         <div class="w-6 h-6 bg-blue-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
@@ -201,11 +234,6 @@ const MapContainer = () => {
     }
   };
 
-  const getIconComponent = (iconType: string) => {
-    const IconComponent = iconMap[iconType as keyof typeof iconMap] || Utensils;
-    return IconComponent;
-  };
-
   const getIconSvg = (iconType: string) => {
     const iconSvgMap: { [key: string]: string } = {
       food: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
@@ -223,6 +251,7 @@ const MapContainer = () => {
     if (!map.current) return;
 
     const markers: mapboxgl.Marker[] = [];
+    const scaleFactor = Math.max(0.3, Math.min(1.2, currentZoom / 12));
 
     records.forEach((record) => {
       const isToday = record.createdAt === today;
@@ -232,37 +261,32 @@ const MapContainer = () => {
       
       const markerEl = document.createElement('div');
       markerEl.className = 'record-marker';
+      markerEl.style.transform = `scale(${scaleFactor})`;
       markerEl.innerHTML = `
         <div class="relative cursor-pointer group">
-          <!-- 오늘 기록인 경우 특별한 효과 -->
           ${isToday ? `
             <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
             <div class="absolute -inset-1 bg-yellow-300 rounded-full animate-ping opacity-50"></div>
           ` : ''}
           
-          <!-- 메인 사진 마커 -->
           <div class="w-14 h-14 rounded-full overflow-hidden border-3 ${isToday ? 'border-yellow-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200 ${isMyRecord ? 'ring-2 ring-blue-400' : ''}">
             <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
           </div>
           
-          <!-- 아이콘 카테고리 표시 -->
           <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
             <div class="w-4 h-4 text-gray-600">${getIconSvg(record.icon || 'food')}</div>
           </div>
           
-          <!-- 좋아요 표시 -->
           <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
             <span class="text-white text-xs font-bold">${record.likes}</span>
           </div>
           
-          <!-- 오늘 표시 -->
           ${isToday ? `
             <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
               TODAY
             </div>
           ` : ''}
           
-          <!-- 사용자 이름 표시 -->
           <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
             ${userName} ${isMyRecord ? '(나)' : ''}
           </div>
@@ -281,6 +305,78 @@ const MapContainer = () => {
     });
 
     setRecordMarkers(markers);
+  };
+
+  const startFootstepAnimation = async () => {
+    if (!map.current || isAnimating) return;
+
+    setIsAnimating(true);
+    
+    // 내 기록들만 필터링하고 날짜순 정렬
+    const myRecords = filteredRecords
+      .filter(record => record.userId === "1")
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    if (myRecords.length === 0) {
+      setIsAnimating(false);
+      return;
+    }
+
+    // 시작점으로 카메라 이동
+    const firstRecord = myRecords[0];
+    await new Promise(resolve => {
+      map.current?.flyTo({
+        center: [firstRecord.location.lng, firstRecord.location.lat],
+        zoom: 16,
+        duration: 1500
+      });
+      setTimeout(resolve, 1500);
+    });
+
+    // 애니메이션 마커 생성
+    const animMarkerEl = document.createElement('div');
+    animMarkerEl.innerHTML = `
+      <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full border-3 border-white shadow-lg animate-pulse flex items-center justify-center">
+        <div class="w-4 h-4 bg-white rounded-full"></div>
+      </div>
+    `;
+
+    const animMarker = new mapboxgl.Marker(animMarkerEl)
+      .setLngLat([firstRecord.location.lng, firstRecord.location.lat])
+      .addTo(map.current);
+
+    setAnimationMarker(animMarker);
+
+    // 각 기록을 순서대로 방문
+    for (let i = 1; i < myRecords.length; i++) {
+      const record = myRecords[i];
+      
+      // 마커 이동
+      animMarker.setLngLat([record.location.lng, record.location.lat]);
+      
+      // 카메라 부드럽게 이동
+      map.current.flyTo({
+        center: [record.location.lng, record.location.lat],
+        zoom: 16,
+        duration: 2000
+      });
+
+      // 잠시 대기
+      await new Promise(resolve => setTimeout(resolve, 2500));
+    }
+
+    // 애니메이션 마커 제거
+    animMarker.remove();
+    setAnimationMarker(null);
+    setIsAnimating(false);
+  };
+
+  const stopFootstepAnimation = () => {
+    if (animationMarker) {
+      animationMarker.remove();
+      setAnimationMarker(null);
+    }
+    setIsAnimating(false);
   };
 
   const moveToCurrentLocation = () => {
@@ -363,12 +459,35 @@ const MapContainer = () => {
       
       {mapLoaded && (
         <>
-          {/* 필터 버튼 */}
+          {/* 개선된 필터 버튼 */}
           <FilterSheet onFilterChange={handleFilterChange}>
-            <button className="absolute top-4 left-4 w-12 h-12 bg-white text-gray-700 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center z-10">
+            <button className="absolute top-4 left-4 bg-white text-gray-700 rounded-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center space-x-2 px-4 py-3 z-10">
               <Filter size={20} />
+              <div className="flex flex-col space-y-1">
+                <div className="w-4 h-0.5 bg-gray-400"></div>
+                <div className="w-4 h-0.5 bg-gray-400"></div>
+                <div className="w-4 h-0.5 bg-gray-400"></div>
+              </div>
+              <span className="text-sm font-medium">필터</span>
             </button>
           </FilterSheet>
+
+          {/* 발자국 애니메이션 버튼 */}
+          <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
+            <Button
+              onClick={isAnimating ? stopFootstepAnimation : startFootstepAnimation}
+              className={`w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 ${
+                isAnimating 
+                  ? 'bg-red-500 hover:bg-red-600' 
+                  : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
+              }`}
+            >
+              {isAnimating ? <Square size={16} /> : <Play size={16} />}
+              <span className="text-sm font-medium">
+                {isAnimating ? '정지' : '내 발자국'}
+              </span>
+            </Button>
+          </div>
 
           <MapControls 
             onCreateRecord={() => setShowCreateModal(true)}
