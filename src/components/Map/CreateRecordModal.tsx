@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -61,53 +60,68 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   };
 
   useEffect(() => {
-    if (isOpen && mapContainer.current && !map.current) {
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-      
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [currentLocation.lng, currentLocation.lat],
-        zoom: 15,
-      });
+    if (isOpen && mapContainer.current) {
+      // 기존 맵 정리
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
 
-      // 드래그 가능한 마커 생성
-      marker.current = new mapboxgl.Marker({ 
-        draggable: true,
-        color: '#ff6b35'
-      })
-        .setLngLat([currentLocation.lng, currentLocation.lat])
-        .addTo(map.current);
-
-      // 마커 드래그 이벤트
-      marker.current.on('dragend', async () => {
-        if (marker.current) {
-          const lngLat = marker.current.getLngLat();
-          const address = await getAddressFromCoordinates(lngLat.lng, lngLat.lat);
-          
-          setSelectedLocation({
-            lat: lngLat.lat,
-            lng: lngLat.lng,
-            address: address
+      // 약간의 지연 후 맵 초기화
+      setTimeout(() => {
+        if (!mapContainer.current) return;
+        
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        
+        try {
+          map.current = new mapboxgl.Map({
+            container: mapContainer.current,
+            style: 'mapbox://styles/mapbox/streets-v12',
+            center: [currentLocation.lng, currentLocation.lat],
+            zoom: 15,
           });
-          setLocationAddress(address);
-        }
-      });
 
-      // 지도 클릭 시 마커 이동
-      map.current.on('click', async (e) => {
-        if (marker.current && map.current) {
-          marker.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-          const address = await getAddressFromCoordinates(e.lngLat.lng, e.lngLat.lat);
-          
-          setSelectedLocation({
-            lat: e.lngLat.lat,
-            lng: e.lngLat.lng,
-            address: address
+          // 드래그 가능한 마커 생성
+          marker.current = new mapboxgl.Marker({ 
+            draggable: true,
+            color: '#ff6b35'
+          })
+            .setLngLat([currentLocation.lng, currentLocation.lat])
+            .addTo(map.current);
+
+          // 마커 드래그 이벤트
+          marker.current.on('dragend', async () => {
+            if (marker.current) {
+              const lngLat = marker.current.getLngLat();
+              const address = await getAddressFromCoordinates(lngLat.lng, lngLat.lat);
+              
+              setSelectedLocation({
+                lat: lngLat.lat,
+                lng: lngLat.lng,
+                address: address
+              });
+              setLocationAddress(address);
+            }
           });
-          setLocationAddress(address);
+
+          // 지도 클릭 시 마커 이동
+          map.current.on('click', async (e) => {
+            if (marker.current && map.current) {
+              marker.current.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+              const address = await getAddressFromCoordinates(e.lngLat.lng, e.lngLat.lat);
+              
+              setSelectedLocation({
+                lat: e.lngLat.lat,
+                lng: e.lngLat.lng,
+                address: address
+              });
+              setLocationAddress(address);
+            }
+          });
+        } catch (error) {
+          console.error('맵박스 초기화 실패:', error);
         }
-      });
+      }, 100);
     }
 
     return () => {
@@ -116,7 +130,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
         map.current = null;
       }
     };
-  }, [isOpen]);
+  }, [isOpen, currentLocation]);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

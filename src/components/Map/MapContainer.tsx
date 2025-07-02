@@ -6,10 +6,21 @@ import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { MapControls } from './MapControls';
 import { FilterSheet, FilterOptions } from './FilterSheet';
-import { Filter } from 'lucide-react';
+import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
+import { useLocation } from 'react-router-dom';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
+
+const iconMap = {
+  food: Utensils,
+  travel: Plane,
+  landscape: Mountain,
+  cafe: Coffee,
+  entertainment: Music,
+  snack: Sandwich,
+  walk: Car
+};
 
 const MapContainer = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -20,6 +31,11 @@ const MapContainer = () => {
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
   const [recordMarkers, setRecordMarkers] = useState<mapboxgl.Marker[]>([]);
   const [pathLines, setPathLines] = useState<string[]>([]);
+  const location = useLocation();
+  
+  // URL에서 selectedRecordId 파라미터 확인
+  const urlParams = new URLSearchParams(location.search);
+  const selectedRecordId = urlParams.get('recordId');
   
   // 친구만 볼 수 있도록 필터링
   const friendRecords = mockRecords.filter(record => {
@@ -69,6 +85,24 @@ const MapContainer = () => {
       }
     };
   }, []);
+
+  // URL 파라미터로 특정 기록 선택
+  useEffect(() => {
+    if (selectedRecordId && mapLoaded) {
+      const record = allRecords.find(r => r.id === selectedRecordId);
+      if (record) {
+        setSelectedRecord(record);
+        // 해당 기록 위치로 지도 이동
+        if (map.current) {
+          map.current.flyTo({
+            center: [record.location.lng, record.location.lat],
+            zoom: 16,
+            duration: 1500
+          });
+        }
+      }
+    }
+  }, [selectedRecordId, mapLoaded, allRecords]);
 
   useEffect(() => {
     if (mapLoaded) {
@@ -159,6 +193,11 @@ const MapContainer = () => {
     }
   };
 
+  const getIconComponent = (iconType: string) => {
+    const IconComponent = iconMap[iconType as keyof typeof iconMap] || Utensils;
+    return IconComponent;
+  };
+
   const addRecordMarkers = (records: Record[]) => {
     if (!map.current) return;
 
@@ -167,6 +206,7 @@ const MapContainer = () => {
     records.forEach((record) => {
       const isToday = record.createdAt === today;
       const isMyRecord = record.userId === "1";
+      const IconComponent = getIconComponent(record.icon);
       
       const markerEl = document.createElement('div');
       markerEl.className = 'record-marker';
@@ -183,6 +223,11 @@ const MapContainer = () => {
             <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
           </div>
           
+          <!-- 아이콘 카테고리 표시 -->
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+            <div class="w-4 h-4 text-gray-600">${this.getIconSvg(record.icon)}</div>
+          </div>
+          
           <!-- 좋아요 표시 -->
           <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
             <span class="text-white text-xs font-bold">${record.likes}</span>
@@ -195,12 +240,26 @@ const MapContainer = () => {
             </div>
           ` : ''}
           
-          <!-- 사용자 이름 표시 - 전체 이름으로 변경 -->
+          <!-- 사용자 이름 표시 -->
           <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
             ${record.userName} ${isMyRecord ? '(나)' : ''}
           </div>
         </div>
       `;
+
+      // 아이콘 SVG 렌더링을 위한 함수 추가
+      markerEl.getIconSvg = function(iconType: string) {
+        const iconSvgMap = {
+          food: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+          travel: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+          landscape: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5v11H6V6l2-3z"/></svg>',
+          cafe: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v20M14 2v20M4 7h20M4 17h20"/></svg>',
+          entertainment: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+          snack: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3"/><path d="M12 19H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3.83"/><path d="m3 11 7.77-6.04a2 2 0 0 1 2.46 0L21 11H3Z"/><path d="M12.97 19.77 7 15h12.5l-3.75 4.5a2 2 0 0 1-2.78.27Z"/></svg>',
+          walk: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>'
+        };
+        return iconSvgMap[iconType] || iconSvgMap.food;
+      };
 
       markerEl.addEventListener('click', () => {
         setSelectedRecord(record);
@@ -237,6 +296,7 @@ const MapContainer = () => {
       image: data.image,
       memo: data.memo,
       hashtags: data.hashtags,
+      icon: data.icon,
       createdAt: new Date().toISOString().split('T')[0],
       likes: 0,
       comments: [],

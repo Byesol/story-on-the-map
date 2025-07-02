@@ -4,13 +4,19 @@ import { mockUsers, mockRecords } from '@/data/mockData';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 import { MapPin, Heart, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
+  const navigate = useNavigate();
   // 현재 사용자를 김다은으로 가정
   const currentUserId = "1";
   const currentUser = mockUsers.find(user => user.id === currentUserId);
   const myRecords = mockRecords.filter(record => record.userId === currentUserId);
   const totalLikes = myRecords.reduce((sum, record) => sum + record.likes, 0);
+
+  const handleRecordClick = (recordId: string) => {
+    navigate(`/?recordId=${recordId}`);
+  };
 
   if (!currentUser) return null;
 
@@ -67,7 +73,11 @@ const Profile = () => {
 
         <div className="space-y-3">
           {myRecords.slice(0, 3).map((record) => (
-            <Card key={record.id}>
+            <Card 
+              key={record.id}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleRecordClick(record.id)}
+            >
               <CardContent className="p-4">
                 <div className="flex space-x-3">
                   <img 

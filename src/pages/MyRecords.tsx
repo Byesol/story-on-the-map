@@ -5,10 +5,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
+import { useNavigate } from 'react-router-dom';
 
 const MyRecords = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('');
+  const navigate = useNavigate();
   
   // 현재 사용자를 김다은으로 가정
   const currentUserId = "1";
@@ -25,6 +27,10 @@ const MyRecords = () => {
     const matchesTag = selectedTag === '' || record.hashtags.includes(selectedTag);
     return matchesSearch && matchesTag;
   });
+
+  const handleRecordClick = (recordId: string) => {
+    navigate(`/?recordId=${recordId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -72,7 +78,11 @@ const MyRecords = () => {
 
         <div className="space-y-4">
           {filteredRecords.map((record) => (
-            <Card key={record.id} className="overflow-hidden">
+            <Card 
+              key={record.id} 
+              className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleRecordClick(record.id)}
+            >
               <div className="flex">
                 <div className="w-24 h-24 flex-shrink-0">
                   <img 
