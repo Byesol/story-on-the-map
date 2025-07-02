@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Record } from '@/data/mockData';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -18,10 +18,19 @@ export const RecordModal: React.FC<RecordModalProps> = ({
   onClose,
   onUpdateRecord
 }) => {
-  const [isLiked, setIsLiked] = useState(record?.isLiked || false);
-  const [likeCount, setLikeCount] = useState(record?.likes || 0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [comment, setComment] = useState('');
-  const [comments, setComments] = useState(record?.comments || []);
+  const [comments, setComments] = useState<any[]>([]);
+
+  // record가 변경될 때마다 상태 동기화
+  useEffect(() => {
+    if (record) {
+      setIsLiked(record.isLiked || false);
+      setLikeCount(record.likes);
+      setComments(record.comments || []);
+    }
+  }, [record]);
 
   if (!record) return null;
 
@@ -70,6 +79,9 @@ export const RecordModal: React.FC<RecordModalProps> = ({
     }
   };
 
+  const today = new Date().toISOString().split('T')[0];
+  const isToday = record.createdAt === today;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
@@ -81,8 +93,16 @@ export const RecordModal: React.FC<RecordModalProps> = ({
                 {record.userName.charAt(0)}
               </span>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900">{record.userName}</p>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <p className="font-semibold text-gray-900">{record.userName}</p>
+                {record.userId === "1" && (
+                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">나</span>
+                )}
+                {isToday && (
+                  <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full animate-pulse">오늘</span>
+                )}
+              </div>
               <p className="text-sm text-gray-500">{record.createdAt}</p>
             </div>
           </div>
@@ -104,12 +124,12 @@ export const RecordModal: React.FC<RecordModalProps> = ({
 
           {/* 메모 */}
           <div className="space-y-2">
-            <p className="text-gray-900">{record.memo}</p>
+            <p className="text-gray-900 leading-relaxed">{record.memo}</p>
             <div className="flex flex-wrap gap-2">
               {record.hashtags.map((tag, index) => (
                 <span 
                   key={index}
-                  className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full"
+                  className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded-full hover:bg-blue-100 transition-colors"
                 >
                   #{tag}
                 </span>
@@ -127,7 +147,7 @@ export const RecordModal: React.FC<RecordModalProps> = ({
                 } hover:text-red-500 transition-colors`}
               >
                 <Heart size={20} fill={isLiked ? 'currentColor' : 'none'} />
-                <span className="text-sm">{likeCount}</span>
+                <span className="text-sm font-medium">{likeCount}</span>
               </button>
               <div className="flex items-center space-x-1 text-gray-500">
                 <MessageCircle size={20} />
@@ -138,15 +158,15 @@ export const RecordModal: React.FC<RecordModalProps> = ({
 
           {/* 댓글 목록 */}
           {comments.length > 0 && (
-            <div className="space-y-2 border-t pt-2">
-              <p className="font-semibold text-sm text-gray-700">댓글</p>
+            <div className="space-y-3 border-t pt-3 max-h-40 overflow-y-auto">
+              <p className="font-semibold text-sm text-gray-700">댓글 {comments.length}개</p>
               {comments.map((comment) => (
-                <div key={comment.id} className="space-y-1">
+                <div key={comment.id} className="space-y-1 bg-gray-50 p-3 rounded-lg">
                   <div className="flex items-start space-x-2">
                     <span className="font-semibold text-sm text-gray-900">
                       {comment.userName}
                     </span>
-                    <span className="text-sm text-gray-700">{comment.content}</span>
+                    <span className="text-sm text-gray-700 flex-1">{comment.content}</span>
                   </div>
                   <p className="text-xs text-gray-500 ml-2">{comment.createdAt}</p>
                 </div>
@@ -155,12 +175,12 @@ export const RecordModal: React.FC<RecordModalProps> = ({
           )}
 
           {/* 댓글 입력 */}
-          <div className="flex space-x-2 border-t pt-2">
+          <div className="flex space-x-2 border-t pt-3">
             <input
               type="text"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="댓글을 입력하세요..."
+              placeholder="친구에게 댓글을 남겨보세요..."
               className="flex-1 px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
               onKeyPress={(e) => e.key === 'Enter' && handleComment()}
             />
