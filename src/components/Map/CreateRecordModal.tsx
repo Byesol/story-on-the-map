@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { MapPin, Camera } from 'lucide-react';
+import { MapPin, Camera, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car } from 'lucide-react';
 import mapboxgl from 'mapbox-gl';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
@@ -14,6 +15,16 @@ interface CreateRecordModalProps {
   onSubmit: (data: any) => void;
   currentLocation: { lat: number; lng: number; address: string };
 }
+
+const iconOptions = [
+  { id: 'food', icon: Utensils, label: '음식', color: 'text-orange-500' },
+  { id: 'travel', icon: Plane, label: '여행', color: 'text-blue-500' },
+  { id: 'landscape', icon: Mountain, label: '풍경', color: 'text-green-500' },
+  { id: 'cafe', icon: Coffee, label: '카페', color: 'text-amber-600' },
+  { id: 'entertainment', icon: Music, label: '놀거리', color: 'text-purple-500' },
+  { id: 'snack', icon: Sandwich, label: '간식', color: 'text-pink-500' },
+  { id: 'walk', icon: Car, label: '산책', color: 'text-teal-500' }
+];
 
 export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   isOpen,
@@ -26,6 +37,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
   const [image, setImage] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState(currentLocation);
   const [locationAddress, setLocationAddress] = useState(currentLocation.address);
+  const [selectedIcon, setSelectedIcon] = useState(iconOptions[0].id);
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
@@ -127,6 +139,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
       memo: memo.trim(),
       hashtags: hashtags.split('#').filter(tag => tag.trim()).map(tag => tag.trim()),
       image,
+      icon: selectedIcon,
       location: {
         ...selectedLocation,
         address: locationAddress
@@ -139,6 +152,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setMemo('');
     setHashtags('');
     setImage(null);
+    setSelectedIcon(iconOptions[0].id);
     setSelectedLocation(currentLocation);
     setLocationAddress(currentLocation.address);
   };
@@ -147,6 +161,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
     setMemo('');
     setHashtags('');
     setImage(null);
+    setSelectedIcon(iconOptions[0].id);
     setSelectedLocation(currentLocation);
     setLocationAddress(currentLocation.address);
     onClose();
@@ -178,6 +193,31 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
           <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
             <MapPin size={16} className="text-gray-600" />
             <span className="text-sm text-gray-700">{locationAddress}</span>
+          </div>
+
+          {/* 아이콘 선택 */}
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700">기록 카테고리</label>
+            <div className="grid grid-cols-4 gap-2">
+              {iconOptions.map((option) => {
+                const IconComponent = option.icon;
+                return (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setSelectedIcon(option.id)}
+                    className={`flex flex-col items-center p-3 rounded-lg border-2 transition-all ${
+                      selectedIcon === option.id
+                        ? 'border-orange-400 bg-orange-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <IconComponent size={24} className={option.color} />
+                    <span className="text-xs mt-1 font-medium">{option.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* 이미지 업로드 */}
@@ -219,7 +259,7 @@ export const CreateRecordModal: React.FC<CreateRecordModalProps> = ({
             <Textarea
               value={memo}
               onChange={(e) => setMemo(e.target.value)}
-              placeholder="이 장소에서의 기억을 남겨보세요..."
+              placeholder="이 장소에서의 기록을 남겨보세요..."
               className="min-h-[100px] resize-none"
             />
           </div>

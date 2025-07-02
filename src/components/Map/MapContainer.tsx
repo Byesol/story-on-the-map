@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -87,11 +86,11 @@ const MapContainer = () => {
 
     const userMarkerEl = document.createElement('div');
     userMarkerEl.className = 'user-location-marker';
-    userMarkerEl.style.zIndex = '2000'; // 매우 높은 z-index로 모든 마커 앞으로
+    userMarkerEl.style.zIndex = '3000'; // 더 높은 z-index
     userMarkerEl.innerHTML = `
-      <div class="relative" style="z-index: 2000;">
-        <div class="w-5 h-5 bg-blue-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-blue-500 rounded-full opacity-20 animate-ping"></div>
+      <div class="relative" style="z-index: 3000;">
+        <div class="w-6 h-6 bg-blue-500 rounded-full border-3 border-white shadow-lg animate-pulse"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-blue-500 rounded-full opacity-20 animate-ping"></div>
         <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold whitespace-nowrap">
           내 위치
         </div>
@@ -196,14 +195,9 @@ const MapContainer = () => {
             </div>
           ` : ''}
           
-          <!-- 사용자 이름 표시 -->
-          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <!-- 사용자 이름 표시 - 전체 이름으로 변경 -->
+          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
             ${record.userName} ${isMyRecord ? '(나)' : ''}
-          </div>
-          
-          <!-- 항상 보이는 작은 이름 표시 -->
-          <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-1 rounded whitespace-nowrap shadow-sm">
-            ${record.userName.charAt(0)}
           </div>
         </div>
       `;
@@ -301,14 +295,9 @@ const MapContainer = () => {
       
       {mapLoaded && (
         <>
-          {/* 서비스 타이틀 */}
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white bg-opacity-90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg z-10">
-            <h1 className="text-sm font-bold text-gray-800">📍 Story on the Map - 친구들과의 추억</h1>
-          </div>
-
           {/* 필터 버튼 */}
           <FilterSheet onFilterChange={handleFilterChange}>
-            <button className="absolute top-20 left-4 w-12 h-12 bg-white text-gray-700 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center z-10">
+            <button className="absolute top-4 left-4 w-12 h-12 bg-white text-gray-700 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center z-10">
               <Filter size={20} />
             </button>
           </FilterSheet>
