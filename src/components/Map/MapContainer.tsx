@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -49,7 +48,7 @@ const MapContainer = () => {
     return user?.isFriend || record.userId === "1"; // 본인 기록도 포함
   }).map(record => ({
     ...record,
-    icon: record.icon || 'food' // Default icon if not present
+    icon: (record as ExtendedRecord).icon || 'food' // Default icon if not present
   })) as ExtendedRecord[];
   
   const [filteredRecords, setFilteredRecords] = useState<ExtendedRecord[]>(friendRecords);
