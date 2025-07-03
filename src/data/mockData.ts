@@ -1,4 +1,3 @@
-
 export interface Location {
   lat: number;
   lng: number;
@@ -33,6 +32,8 @@ export interface AppRecord {
 export interface User {
   id: string;
   name: string;
+  age: number;
+  occupation: string;
   isFriend: boolean;
 }
 
@@ -43,14 +44,14 @@ export const CURRENT_USER_LOCATION: Location = {
 };
 
 export const mockUsers: User[] = [
-  { id: "1", name: "김다은", isFriend: false }, // 본인
-  { id: "2", name: "이민수", isFriend: true },
-  { id: "3", name: "박지영", isFriend: true },
-  { id: "4", name: "최현우", isFriend: true },
-  { id: "5", name: "정소영", isFriend: true },
-  { id: "6", name: "김태호", isFriend: true },
-  { id: "7", name: "윤서연", isFriend: true },
-  { id: "8", name: "장민혁", isFriend: true },
+  { id: "1", name: "김다은", age: 28, occupation: "UI/UX 디자이너", isFriend: false }, // 본인
+  { id: "2", name: "이민수", age: 31, occupation: "개발자", isFriend: true },
+  { id: "3", name: "박지영", age: 26, occupation: "마케터", isFriend: true },
+  { id: "4", name: "최현우", age: 29, occupation: "사진작가", isFriend: true },
+  { id: "5", name: "정소영", age: 27, occupation: "카페사장", isFriend: true },
+  { id: "6", name: "김태호", age: 33, occupation: "건축가", isFriend: true },
+  { id: "7", name: "윤서연", age: 25, occupation: "학생", isFriend: true },
+  { id: "8", name: "장민혁", age: 30, occupation: "요리사", isFriend: true },
 ];
 
 export const mockRecords: AppRecord[] = [
