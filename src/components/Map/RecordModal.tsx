@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
-import { Record } from '@/data/mockData';
+import { AppRecord } from '@/data/mockData';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Heart, MessageCircle, MapPin, Activity, Clock, Route } from 'lucide-react';
 
-interface ExtendedRecord extends Record {
+interface ExtendedRecord extends AppRecord {
   isRunning?: boolean;
   distance?: number;
   duration?: string;
