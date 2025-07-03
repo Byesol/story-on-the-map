@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MapPin, Route, Smile, Hash, Calendar, Clock } from 'lucide-react';
+import { MapPin, Smile, Hash, Calendar } from 'lucide-react';
 import { AppRecord } from '@/data/mockData';
 
 interface DailySummaryProps {
@@ -26,26 +26,6 @@ export const DailySummaryCard: React.FC<DailySummaryProps> = ({
 
   // 통계 계산
   const visitedPlaces = todayRecords.length;
-  const runningRecords = todayRecords.filter(record => record.isRunning && record.distance);
-  const totalDistance = runningRecords.reduce((sum, record) => sum + (record.distance || 0), 0);
-  
-  // 총 런닝 시간 계산 (분 단위로 변환)
-  const totalRunningMinutes = runningRecords.reduce((sum, record) => {
-    if (record.duration) {
-      const [minutes, seconds] = record.duration.split(':').map(Number);
-      return sum + minutes + (seconds / 60);
-    }
-    return sum;
-  }, 0);
-  
-  const formatDuration = (totalMinutes: number) => {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.floor(totalMinutes % 60);
-    if (hours > 0) {
-      return `${hours}시간 ${minutes}분`;
-    }
-    return `${minutes}분`;
-  };
   
   // 감정 분석 (mood 기반)
   const moodCount = todayRecords.reduce((acc, record) => {
@@ -121,37 +101,6 @@ export const DailySummaryCard: React.FC<DailySummaryProps> = ({
                 </div>
               </div>
 
-              {/* 총 런닝 거리 및 시간 */}
-              {totalDistance > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Route className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-green-900">총 런닝 거리</p>
-                      <p className="text-2xl font-bold text-green-600">{totalDistance.toFixed(1)}km</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Clock className="w-5 h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-green-900">총 운동 시간</p>
-                      <p className="text-2xl font-bold text-green-600">{formatDuration(totalRunningMinutes)}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-green-50 p-3 rounded-lg">
-                    <p className="text-sm text-green-800 text-center">
-                      평균 속도: {totalRunningMinutes > 0 ? (totalDistance / (totalRunningMinutes / 60)).toFixed(1) : 0} km/h
-                    </p>
-                  </div>
-                </div>
-              )}
-
               {/* 많이 남긴 감정 */}
               {topMood && (
                 <div className="flex items-center space-x-3 p-3 bg-yellow-50 rounded-lg">
@@ -189,11 +138,9 @@ export const DailySummaryCard: React.FC<DailySummaryProps> = ({
                         alt={record.memo}
                         className="w-full h-full object-cover"
                       />
-                      {record.isRunning && (
-                        <div className="absolute top-1 right-1 bg-green-500 text-white text-xs px-1 py-0.5 rounded">
-                          RUN
-                        </div>
-                      )}
+                      <div className="absolute top-1 right-1 bg-black bg-opacity-50 text-white text-xs px-1 py-0.5 rounded">
+                        {record.likes}
+                      </div>
                     </div>
                   ))}
                 </div>
