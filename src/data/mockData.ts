@@ -54,7 +54,91 @@ export const mockUsers: User[] = [
   { id: "8", name: "장민혁", age: 30, occupation: "요리사", isFriend: true },
 ];
 
+const today = new Date().toISOString().split('T')[0];
+
 export const mockRecords: AppRecord[] = [
+  // 오늘 기록들 (TODAY)
+  {
+    id: "today1",
+    userId: "1",
+    userName: "김다은",
+    location: { lat: 37.5665, lng: 126.9780, address: "서울시 중구 명동" },
+    image: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop",
+    memo: "오늘 아침 명동에서 친구와 브런치! 새로운 하루의 시작 ☀️",
+    hashtags: ["브런치", "친구", "아침", "명동"],
+    icon: "cafe",
+    createdAt: today,
+    time: "09:30",
+    likes: 5,
+    comments: [],
+    isLiked: false,
+    mood: "smile"
+  },
+  {
+    id: "today2",
+    userId: "2",
+    userName: "이민수",
+    location: { lat: 37.5794, lng: 126.9770, address: "서울시 종로구 북촌한옥마을" },
+    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+    memo: "북촌한옥마을에서 전통 건축의 아름다움에 감탄했어요 🏠",
+    hashtags: ["전통", "한옥", "북촌", "건축"],
+    icon: "landscape",
+    createdAt: today,
+    time: "11:00",
+    likes: 8,
+    comments: [],
+    isLiked: true,
+    mood: "smile"
+  },
+  {
+    id: "today3",
+    userId: "1",
+    userName: "김다은",
+    location: { lat: 37.5547, lng: 126.9707, address: "서울시 중구 남대문시장" },
+    image: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&h=300&fit=crop",
+    memo: "남대문시장에서 점심! 진짜 맛있는 칼국수 발견 🍜",
+    hashtags: ["점심", "칼국수", "남대문시장", "맛집"],
+    icon: "food",
+    createdAt: today,
+    time: "12:45",
+    likes: 12,
+    comments: [],
+    isLiked: false,
+    mood: "smile"
+  },
+  {
+    id: "today4",
+    userId: "3",
+    userName: "박지영",
+    location: { lat: 37.5758, lng: 126.9768, address: "서울시 종로구 인사동" },
+    image: "https://images.unsplash.com/photo-1544427920-c49ccfb85579?w=400&h=300&fit=crop",
+    memo: "인사동에서 전통차 체험! 차 향이 너무 좋아요 🍵",
+    hashtags: ["전통차", "인사동", "체험", "힐링"],
+    icon: "cafe",
+    createdAt: today,
+    time: "14:20",
+    likes: 7,
+    comments: [],
+    isLiked: false,
+    mood: "smile"
+  },
+  {
+    id: "today5",
+    userId: "1",
+    userName: "김다은",
+    location: { lat: 37.5595, lng: 126.9745, address: "서울시 중구 청계천" },
+    image: "https://images.unsplash.com/photo-1520637736862-4d197d17c91a?w=400&h=300&fit=crop",
+    memo: "청계천 따라 산책하며 하루를 마무리 🌆 도심 속 힐링",
+    hashtags: ["산책", "청계천", "힐링", "도심"],
+    icon: "landscape",
+    createdAt: today,
+    time: "17:30",
+    likes: 15,
+    comments: [],
+    isLiked: false,
+    mood: "smile"
+  },
+
   // 2023년 기록들
   {
     id: "1",
@@ -145,7 +229,7 @@ export const mockRecords: AppRecord[] = [
     userId: "1",
     userName: "김다은", 
     location: { lat: 37.5665, lng: 126.9780, address: "서울시 중구 명동거리" },
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
+    image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
     memo: "새해 첫 쇼핑! 명동에서 예쁜 옷 많이 샀어요 💕",
     hashtags: ["쇼핑", "새해", "명동", "옷"],
     icon: "entertainment",
@@ -209,7 +293,7 @@ export const mockRecords: AppRecord[] = [
     userId: "1",
     userName: "김다은",
     location: { lat: 37.5595, lng: 126.9745, address: "서울시 중구 청계천" },
-    image: "https://images.unsplash.com/photo-1520637736862-4d197d17c91a?w=400&h=300&fit=crop",
+    image: "https://images.unsplash.com/photo-1520637836862-4d197d17c91a?w=400&h=300&fit=crop",
     memo: "청계천 야경이 정말 로맨틱해요 ✨ 혼자 산책하기 좋은 곳",
     hashtags: ["야경", "청계천", "로맨틱", "산책"],
     icon: "landscape",

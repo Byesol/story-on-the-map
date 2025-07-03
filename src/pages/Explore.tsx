@@ -140,6 +140,10 @@ const Explore = () => {
           ${isMyRecord ? `
             <div class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 rounded-full border border-white"></div>
           ` : ''}
+          
+          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
+            ${record.userName}
+          </div>
         </div>
       `;
 

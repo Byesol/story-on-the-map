@@ -4,8 +4,9 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { mockRecords, CURRENT_USER_LOCATION, AppRecord, mockUsers } from '@/data/mockData';
 import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
+import { FilterSheet, FilterOptions } from './FilterSheet';
 import MapControls from './MapControls';
-import { Calendar, ChevronLeft, ChevronRight, Play, Square, BarChart3 } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, Play, Square, BarChart3, Filter } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,7 @@ const MapContainer = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationMarker, setAnimationMarker] = useState<mapboxgl.Marker | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(2025);
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const location = useLocation();
   const [showStoryMode, setShowStoryMode] = useState(false);
   const [showDailySummary, setShowDailySummary] = useState(false);
@@ -54,11 +56,24 @@ const MapContainer = () => {
   // 내 기록만 필터링 (userId = "1")
   const myRecords = mockRecords.filter(record => record.userId === "1");
   
-  // 연도별 필터링
-  const filteredRecords = myRecords.filter(record => {
+  // 연도별 필터링과 추가 필터링 적용
+  let filteredRecords = myRecords.filter(record => {
     const recordYear = new Date(record.createdAt).getFullYear();
     return recordYear === selectedYear;
   });
+
+  // 추가 필터링 적용
+  if (filterOptions.hashtag) {
+    filteredRecords = filteredRecords.filter(record => 
+      record.hashtags.some(tag => tag.toLowerCase().includes(filterOptions.hashtag!.toLowerCase()))
+    );
+  }
+
+  if (filterOptions.author) {
+    filteredRecords = filteredRecords.filter(record => 
+      record.userName.toLowerCase().includes(filterOptions.author!.toLowerCase())
+    );
+  }
 
   // 사용 가능한 연도들 추출
   const availableYears = Array.from(new Set(myRecords.map(record => 
@@ -188,10 +203,7 @@ const MapContainer = () => {
       travel: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
       landscape: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5v11H6V6l2-3z"/></svg>',
       cafe: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v20M14 2v20M4 7h20M4 17h20"/></svg>',
-      entertainment: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-      snack: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>',
-      walk: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>',
-      running: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3z"/><path d="M12 5v14l-4-4"/><path d="M12 19l4-4"/></svg>'
+      entertainment: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'
     };
     return iconSvgMap[iconType] || iconSvgMap.food;
   };
@@ -493,6 +505,10 @@ const MapContainer = () => {
     setShowMemoryAlert(false);
   };
 
+  const handleFilterChange = (newFilterOptions: FilterOptions) => {
+    setFilterOptions(newFilterOptions);
+  };
+
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
@@ -538,6 +554,20 @@ const MapContainer = () => {
             <div className="text-xs text-gray-500 mt-1 text-center">
               {filteredRecords.length}개의 기록
             </div>
+          </div>
+
+          {/* 필터 버튼 */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
+            <FilterSheet onFilterChange={handleFilterChange}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="bg-white shadow-lg"
+              >
+                <Filter size={16} className="mr-2" />
+                필터
+              </Button>
+            </FilterSheet>
           </div>
 
           {/* 상단 컨트롤 버튼들 */}
