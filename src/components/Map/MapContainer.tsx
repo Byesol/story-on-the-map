@@ -14,6 +14,8 @@ import { StoryMode } from './StoryMode';
 import { DailySummaryCard } from './DailySummaryCard';
 import { MemoryAlert } from './MemoryAlert';
 import { useLocationMemory } from '@/hooks/useLocationMemory';
+import { RouteRecorder } from './RouteRecorder';
+import { Smile, Frown, Meh } from 'lucide-react';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
@@ -26,6 +28,12 @@ const iconMap = {
   snack: Sandwich,
   walk: Car,
   running: Car // 런닝 아이콘 추가
+};
+
+const moodIconMap = {
+  smile: Smile,
+  frown: Frown,
+  meh: Meh
 };
 
 const MapContainer = () => {
@@ -44,6 +52,7 @@ const MapContainer = () => {
   const location = useLocation();
   const [showStoryMode, setShowStoryMode] = useState(false);
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [showRouteRecorder, setShowRouteRecorder] = useState(false);
   
   // URL에서 selectedRecordId 파라미터 확인
   const urlParams = new URLSearchParams(location.search);
@@ -198,6 +207,15 @@ const MapContainer = () => {
     return iconSvgMap[iconType] || iconSvgMap.food;
   };
 
+  const getMoodIconSvg = (mood: string) => {
+    const moodSvgMap: { [key: string]: string } = {
+      smile: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
+      frown: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+      meh: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" x2="16" y1="12" y2="12"/></svg>'
+    };
+    return moodSvgMap[mood] || moodSvgMap.meh;
+  };
+
   const addRecordMarkers = (records: AppRecord[]) => {
     if (!map.current) return;
 
@@ -210,45 +228,129 @@ const MapContainer = () => {
       const user = mockUsers.find(u => u.id === record.userId);
       const userName = user?.name || 'Unknown';
       
+      // 경로 기록인 경우 경로 표시
+      if (record.isRouteRecord && record.routeCoordinates) {
+        const routeId = `route-${record.id}`;
+        
+        if (!map.current.getSource(routeId)) {
+          map.current.addSource(routeId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: record.routeCoordinates
+              }
+            }
+          });
+
+          map.current.addLayer({
+            id: routeId,
+            type: 'line',
+            source: routeId,
+            layout: {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            paint: {
+              'line-color': record.isRunning ? '#10b981' : '#3b82f6',
+              'line-width': 4,
+              'line-opacity': 0.8
+            }
+          });
+        }
+      }
+      
       const markerEl = document.createElement('div');
       markerEl.className = 'record-marker';
       markerEl.style.transform = `scale(${scaleFactor})`;
-      markerEl.innerHTML = `
-        <div class="relative cursor-pointer group">
-          ${isToday ? `
-            <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
-            <div class="absolute -inset-1 bg-yellow-300 rounded-full animate-ping opacity-50"></div>
-          ` : ''}
-          
-          <div class="w-14 h-14 rounded-full overflow-hidden border-3 ${isToday ? 'border-yellow-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200 ${isMyRecord ? 'ring-2 ring-blue-400' : ''}">
-            <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
-          </div>
-          
-          <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
-            <div class="w-4 h-4 text-gray-600">${getIconSvg(record.icon || 'food')}</div>
-          </div>
-          
-          <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
-            <span class="text-white text-xs font-bold">${record.likes}</span>
-          </div>
-          
-          ${isToday ? `
-            <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
-              TODAY
+      
+      // 경로 기록인 경우 다른 마커 스타일 사용
+      if (record.isRouteRecord) {
+        markerEl.innerHTML = `
+          <div class="relative cursor-pointer group">
+            ${isToday ? `
+              <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
+              <div class="absolute -inset-1 bg-yellow-300 rounded-full animate-ping opacity-50"></div>
+            ` : ''}
+            
+            <div class="w-16 h-10 bg-gradient-to-r ${record.isRunning ? 'from-green-500 to-green-600' : 'from-blue-500 to-blue-600'} rounded-lg border-2 border-white shadow-lg hover:scale-110 transition-transform duration-200 flex items-center justify-center">
+              <div class="text-white text-xs font-bold text-center">
+                <div>${record.distance}km</div>
+                <div>${record.duration}</div>
+              </div>
             </div>
-          ` : ''}
-          
-          ${record.isRunning ? `
-            <div class="absolute -top-3 -right-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-              RUN
+            
+            <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+              <div class="w-4 h-4 text-gray-600">${getIconSvg(record.icon || 'running')}</div>
             </div>
-          ` : ''}
-          
-          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
-            ${userName} ${isMyRecord ? '(나)' : ''}
+            
+            ${record.mood ? `
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+                <div class="w-3 h-3 ${record.mood === 'smile' ? 'text-green-500' : record.mood === 'frown' ? 'text-red-500' : 'text-yellow-500'}">${getMoodIconSvg(record.mood)}</div>
+              </div>
+            ` : ''}
+            
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+              <span class="text-white text-xs font-bold">${record.likes}</span>
+            </div>
+            
+            ${isToday ? `
+              <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
+                TODAY
+              </div>
+            ` : ''}
+            
+            <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
+              ${userName} ${isMyRecord ? '(나)' : ''}
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        markerEl.innerHTML = `
+          <div class="relative cursor-pointer group">
+            ${isToday ? `
+              <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
+              <div class="absolute -inset-1 bg-yellow-300 rounded-full animate-ping opacity-50"></div>
+            ` : ''}
+            
+            <div class="w-14 h-14 rounded-full overflow-hidden border-3 ${isToday ? 'border-yellow-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200 ${isMyRecord ? 'ring-2 ring-blue-400' : ''}">
+              <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
+            </div>
+            
+            <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+              <div class="w-4 h-4 text-gray-600">${getIconSvg(record.icon || 'food')}</div>
+            </div>
+            
+            ${record.mood ? `
+              <div class="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+                <div class="w-3 h-3 ${record.mood === 'smile' ? 'text-green-500' : record.mood === 'frown' ? 'text-red-500' : 'text-yellow-500'}">${getMoodIconSvg(record.mood)}</div>
+              </div>
+            ` : ''}
+            
+            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+              <span class="text-white text-xs font-bold">${record.likes}</span>
+            </div>
+            
+            ${isToday ? `
+              <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
+                TODAY
+              </div>
+            ` : ''}
+            
+            ${record.isRunning ? `
+              <div class="absolute -top-3 -right-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                RUN
+              </div>
+            ` : ''}
+            
+            <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
+              ${userName} ${isMyRecord ? '(나)' : ''}
+            </div>
+          </div>
+        `;
+      }
 
       markerEl.addEventListener('click', () => {
         setSelectedRecord(record);
@@ -432,6 +534,37 @@ const MapContainer = () => {
     setShowCreateModal(false);
   };
 
+  const handleRouteRecordSave = (routeData: any) => {
+    const newRouteRecord: AppRecord = {
+      id: `route-${Date.now()}`,
+      userId: "1",
+      userName: "김다은",
+      location: {
+        lat: routeData.coordinates[0][1],
+        lng: routeData.coordinates[0][0],
+        address: routeData.startLocation
+      },
+      image: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=300&fit=crop",
+      memo: `경로 기록 완료! ${routeData.distance}km 이동`,
+      hashtags: ["경로기록", "이동"],
+      icon: 'running',
+      createdAt: new Date().toISOString().split('T')[0],
+      likes: 0,
+      comments: [],
+      isLiked: false,
+      isRouteRecord: true,
+      routeCoordinates: routeData.coordinates,
+      distance: routeData.distance,
+      duration: routeData.duration,
+      mood: 'smile',
+      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const updatedRecords = [...allRecords, newRouteRecord];
+    setAllRecords(updatedRecords);
+    setFilteredRecords(updatedRecords);
+  };
+
   const handleFilterChange = (filters: FilterOptions) => {
     setFilterOptions(filters);
     let filtered = allRecords;
@@ -538,6 +671,7 @@ const MapContainer = () => {
           <MapControls 
             onCreateRecord={() => setShowCreateModal(true)}
             onMoveToCurrentLocation={moveToCurrentLocation}
+            onStartRouteRecord={() => setShowRouteRecorder(true)}
           />
           
           <RecordModal 
@@ -555,7 +689,13 @@ const MapContainer = () => {
             currentLocation={CURRENT_USER_LOCATION}
           />
 
-          {/* 스토리 모드 */}
+          {/* 경로 기록 모달 */}
+          <RouteRecorder
+            isOpen={showRouteRecorder}
+            onClose={() => setShowRouteRecorder(false)}
+            onSave={handleRouteRecordSave}
+          />
+
           <StoryMode
             records={allRecords}
             isOpen={showStoryMode}
