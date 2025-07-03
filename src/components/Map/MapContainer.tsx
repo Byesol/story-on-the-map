@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { mockRecords, CURRENT_USER_LOCATION, AppRecord, mockUsers } from '@/data/mockData';
 import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
-import { MapControls } from './MapControls';
+import MapControls from './MapControls';
 import { FilterSheet, FilterOptions } from './FilterSheet';
 import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car, MapPin, Play, Square, Calendar, BarChart3 } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
