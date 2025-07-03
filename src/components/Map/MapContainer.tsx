@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -7,10 +6,14 @@ import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { MapControls } from './MapControls';
 import { FilterSheet, FilterOptions } from './FilterSheet';
-import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car, MapPin, Play, Square } from 'lucide-react';
+import { Filter, Utensils, Plane, Mountain, Coffee, Music, Sandwich, Car, MapPin, Play, Square, Calendar, BarChart3 } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
 import { useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { StoryMode } from './StoryMode';
+import { DailySummaryCard } from './DailySummaryCard';
+import { MemoryAlert } from './MemoryAlert';
+import { useLocationMemory } from '@/hooks/useLocationMemory';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
 
@@ -31,6 +34,7 @@ interface ExtendedRecord extends Record {
   isRunning?: boolean;
   distance?: number;
   duration?: string;
+  mood?: string;
 }
 
 const MapContainer = () => {
@@ -47,6 +51,8 @@ const MapContainer = () => {
   const [animationMarker, setAnimationMarker] = useState<mapboxgl.Marker | null>(null);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const location = useLocation();
+  const [showStoryMode, setShowStoryMode] = useState(false);
+  const [showDailySummary, setShowDailySummary] = useState(false);
   
   // URL에서 selectedRecordId 파라미터 확인
   const urlParams = new URLSearchParams(location.search);
@@ -65,6 +71,12 @@ const MapContainer = () => {
   const [allRecords, setAllRecords] = useState<ExtendedRecord[]>(friendRecords);
 
   const today = new Date().toISOString().split('T')[0];
+
+  // 위치 기반 회상 알림
+  const { memories, showMemoryAlert, setShowMemoryAlert } = useLocationMemory(
+    CURRENT_USER_LOCATION,
+    allRecords
+  );
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -420,7 +432,8 @@ const MapContainer = () => {
       isLiked: false,
       isRunning: data.isRunning,
       distance: data.distance,
-      duration: data.duration
+      duration: data.duration,
+      mood: data.mood
     };
     
     // 기록 목록에 추가
@@ -474,6 +487,11 @@ const MapContainer = () => {
     handleFilterChange(newFilters);
   };
 
+  const handleMemoryRecordView = (record: ExtendedRecord) => {
+    setSelectedRecord(record);
+    setShowMemoryAlert(false);
+  };
+
   return (
     <div className="relative w-full h-screen">
       <div ref={mapContainer} className="absolute inset-0" />
@@ -493,8 +511,9 @@ const MapContainer = () => {
             </button>
           </FilterSheet>
 
-          {/* 발자국 애니메이션 버튼 */}
+          {/* 상단 컨트롤 버튼들 */}
           <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
+            {/* 기존 발자국 애니메이션 버튼 */}
             <Button
               onClick={isAnimating ? stopFootstepAnimation : startFootstepAnimation}
               className={`w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 ${
@@ -507,6 +526,24 @@ const MapContainer = () => {
               <span className="text-sm font-medium">
                 {isAnimating ? '정지' : '내 발자국'}
               </span>
+            </Button>
+
+            {/* 스토리 모드 버튼 */}
+            <Button
+              onClick={() => setShowStoryMode(true)}
+              className="w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+            >
+              <Calendar size={16} />
+              <span className="text-sm font-medium">오늘 스토리</span>
+            </Button>
+
+            {/* 하루 요약 버튼 */}
+            <Button
+              onClick={() => setShowDailySummary(true)}
+              className="w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            >
+              <BarChart3 size={16} />
+              <span className="text-sm font-medium">하루 요약</span>
             </Button>
           </div>
 
@@ -528,6 +565,29 @@ const MapContainer = () => {
             onClose={() => setShowCreateModal(false)}
             onSubmit={handleCreateRecord}
             currentLocation={CURRENT_USER_LOCATION}
+          />
+
+          {/* 스토리 모드 */}
+          <StoryMode
+            records={allRecords}
+            isOpen={showStoryMode}
+            onClose={() => setShowStoryMode(false)}
+          />
+
+          {/* 하루 요약 카드 */}
+          <DailySummaryCard
+            records={allRecords}
+            targetDate={today}
+            isOpen={showDailySummary}
+            onClose={() => setShowDailySummary(false)}
+          />
+
+          {/* 위치 기반 회상 알림 */}
+          <MemoryAlert
+            memories={memories}
+            isOpen={showMemoryAlert}
+            onClose={() => setShowMemoryAlert(false)}
+            onViewRecord={handleMemoryRecordView}
           />
         </>
       )}
