@@ -3,16 +3,17 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, MapPin, X } from 'lucide-react';
+import { AppRecord } from '@/data/mockData';
 
 interface MemoryAlertProps {
   memories: Array<{
-    record: any;
+    record: AppRecord;
     daysAgo: number;
     message: string;
   }>;
   isOpen: boolean;
   onClose: () => void;
-  onViewRecord: (record: any) => void;
+  onViewRecord: (record: AppRecord) => void;
 }
 
 export const MemoryAlert: React.FC<MemoryAlertProps> = ({

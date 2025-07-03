@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { mockRecords, CURRENT_USER_LOCATION, Record, mockUsers } from '@/data/mockData';
+import { mockRecords, CURRENT_USER_LOCATION, AppRecord, mockUsers } from '@/data/mockData';
 import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { MapControls } from './MapControls';
@@ -28,19 +28,10 @@ const iconMap = {
   running: Car // 런닝 아이콘 추가
 };
 
-// Extended Record type with icon property
-interface ExtendedRecord extends Record {
-  icon?: string;
-  isRunning?: boolean;
-  distance?: number;
-  duration?: string;
-  mood?: string;
-}
-
 const MapContainer = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<ExtendedRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<AppRecord | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
@@ -62,13 +53,10 @@ const MapContainer = () => {
   const friendRecords = mockRecords.filter(record => {
     const user = mockUsers.find(u => u.id === record.userId);
     return user?.isFriend || record.userId === "1"; // 본인 기록도 포함
-  }).map(record => ({
-    ...record,
-    icon: (record as ExtendedRecord).icon || 'food' // Default icon if not present
-  })) as ExtendedRecord[];
+  }) as AppRecord[];
   
-  const [filteredRecords, setFilteredRecords] = useState<ExtendedRecord[]>(friendRecords);
-  const [allRecords, setAllRecords] = useState<ExtendedRecord[]>(friendRecords);
+  const [filteredRecords, setFilteredRecords] = useState<AppRecord[]>(friendRecords);
+  const [allRecords, setAllRecords] = useState<AppRecord[]>(friendRecords);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -210,7 +198,7 @@ const MapContainer = () => {
     return iconSvgMap[iconType] || iconSvgMap.food;
   };
 
-  const addRecordMarkers = (records: ExtendedRecord[]) => {
+  const addRecordMarkers = (records: AppRecord[]) => {
     if (!map.current) return;
 
     const markers: mapboxgl.Marker[] = [];
@@ -417,7 +405,7 @@ const MapContainer = () => {
     console.log('새 기록 생성:', data);
     
     // 새 기록 생성
-    const newRecord: ExtendedRecord = {
+    const newRecord: AppRecord = {
       id: `new-${Date.now()}`,
       userId: "1", // 현재 사용자 ID
       userName: "김다은", // 현재 사용자 이름
@@ -469,7 +457,7 @@ const MapContainer = () => {
     setFilteredRecords(filtered);
   };
 
-  const updateRecordInList = (updatedRecord: ExtendedRecord) => {
+  const updateRecordInList = (updatedRecord: AppRecord) => {
     const updatedAllRecords = allRecords.map(record => 
       record.id === updatedRecord.id ? updatedRecord : record
     );
@@ -487,7 +475,7 @@ const MapContainer = () => {
     handleFilterChange(newFilters);
   };
 
-  const handleMemoryRecordView = (record: ExtendedRecord) => {
+  const handleMemoryRecordView = (record: AppRecord) => {
     setSelectedRecord(record);
     setShowMemoryAlert(false);
   };

@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -8,7 +7,7 @@ export interface User {
   isFriend: boolean;
 }
 
-export interface Record {
+export interface AppRecord {
   id: string;
   userId: string;
   userName: string;
@@ -25,6 +24,13 @@ export interface Record {
   likes: number;
   comments: Comment[];
   isLiked?: boolean;
+  // Extended properties for running and mood
+  isRunning?: boolean;
+  distance?: number;
+  duration?: string;
+  mood?: 'smile' | 'frown' | 'meh';
+  icon?: string;
+  time?: string;
 }
 
 export interface Comment {
@@ -53,7 +59,7 @@ const today = new Date().toISOString().split('T')[0];
 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 const twoDaysAgo = new Date(Date.now() - 172800000).toISOString().split('T')[0];
 
-export const mockRecords: Record[] = [
+export const mockRecords: AppRecord[] = [
   // 기존 기록들 + 오늘 날짜 추가
   {
     id: "1",

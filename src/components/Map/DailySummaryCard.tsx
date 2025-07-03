@@ -2,10 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Route, Smile, Hash, Calendar } from 'lucide-react';
-import { Record } from '@/data/mockData';
+import { AppRecord } from '@/data/mockData';
 
 interface DailySummaryProps {
-  records: Record[];
+  records: AppRecord[];
   targetDate?: string;
   isOpen: boolean;
   onClose: () => void;
@@ -35,7 +35,7 @@ export const DailySummaryCard: React.FC<DailySummaryProps> = ({
     const mood = record.mood || 'smile';
     acc[mood] = (acc[mood] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as {[key: string]: number});
   
   const topMood = Object.entries(moodCount).sort((a, b) => b[1] - a[1])[0];
   
@@ -45,7 +45,7 @@ export const DailySummaryCard: React.FC<DailySummaryProps> = ({
       acc[tag] = (acc[tag] || 0) + 1;
     });
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as {[key: string]: number});
   
   const topHashtag = Object.entries(hashtagCount).sort((a, b) => b[1] - a[1])[0];
 

@@ -4,10 +4,10 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, SkipBack, SkipForward, X } from 'lucide-react';
-import { Record } from '@/data/mockData';
+import { AppRecord } from '@/data/mockData';
 
 interface StoryModeProps {
-  records: Record[];
+  records: AppRecord[];
   isOpen: boolean;
   onClose: () => void;
   targetDate?: string;
@@ -153,10 +153,7 @@ export const StoryMode: React.FC<StoryModeProps> = ({
                 <SkipBack size={16} />
               </Button>
               
-              <Button
-                onClick={togglePlayback}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              >
+              <Button onClick={togglePlayback} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
               </Button>
               

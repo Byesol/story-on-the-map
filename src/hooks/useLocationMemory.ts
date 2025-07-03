@@ -1,16 +1,16 @@
 
 import { useState, useEffect } from 'react';
-import { Record } from '@/data/mockData';
+import { AppRecord } from '@/data/mockData';
 
 interface LocationMemory {
-  record: Record;
+  record: AppRecord;
   daysAgo: number;
   message: string;
 }
 
 export const useLocationMemory = (
   currentLocation: { lat: number; lng: number },
-  allRecords: Record[]
+  allRecords: AppRecord[]
 ) => {
   const [memories, setMemories] = useState<LocationMemory[]>([]);
   const [showMemoryAlert, setShowMemoryAlert] = useState(false);
