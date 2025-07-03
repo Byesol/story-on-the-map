@@ -200,7 +200,7 @@ const MapContainer = () => {
       landscape: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5v11H6V6l2-3z"/></svg>',
       cafe: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v20M14 2v20M4 7h20M4 17h20"/></svg>',
       entertainment: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-      snack: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3"/><path d="M12 19H4a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-3.83"/><path d="m3 11 7.77-6.04a2 2 0 0 1 2.46 0L21 11H3Z"/><path d="M12.97 19.77 7 15h12.5l-3.75 4.5a2 2 0 0 1-2.78.27Z"/></svg>',
+      snack: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>',
       walk: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10V6c0-.6-.4-1-1-1h-4c-.6 0-1 .4-1 1v4H9l-1-1v-2c0-.6-.4-1-1-1H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h2"/><circle cx="7" cy="9" r="2"/></svg>',
       running: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3z"/><path d="M12 5v14l-4-4"/><path d="M12 19l4-4"/></svg>'
     };
@@ -209,9 +209,9 @@ const MapContainer = () => {
 
   const getMoodIconSvg = (mood: string) => {
     const moodSvgMap: { [key: string]: string } = {
-      smile: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>',
-      frown: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
-      meh: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" x2="16" y1="12" y2="12"/></svg>'
+      smile: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m8 14.5 2 2 4-4"/></svg>',
+      frown: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 16s-1.5-2-4-2-4 2-4 2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>',
+      meh: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" x2="16" y1="15" y2="15"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/></svg>'
     };
     return moodSvgMap[mood] || moodSvgMap.meh;
   };
@@ -371,10 +371,16 @@ const MapContainer = () => {
 
     setIsAnimating(true);
     
-    // 내 기록들만 필터링하고 날짜순 정렬
+    // 내 기록들만 필터링하고 시간순 정렬
     const myRecords = filteredRecords
       .filter(record => record.userId === "1")
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .sort((a, b) => {
+        // 시간이 있으면 시간순으로, 없으면 생성 순서대로
+        if (a.time && b.time) {
+          return a.time.localeCompare(b.time);
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
 
     if (myRecords.length === 0) {
       setIsAnimating(false);
@@ -387,9 +393,9 @@ const MapContainer = () => {
       map.current?.flyTo({
         center: [firstRecord.location.lng, firstRecord.location.lat],
         zoom: 16,
-        duration: 1500
+        duration: 2000
       });
-      setTimeout(resolve, 1500);
+      setTimeout(resolve, 2000);
     });
 
     // 애니메이션 마커 생성
@@ -406,6 +412,38 @@ const MapContainer = () => {
 
     setAnimationMarker(animMarker);
 
+    // 첫 번째 기록 정보 표시
+    const showRecordInfo = (record: AppRecord) => {
+      const popup = new mapboxgl.Popup({
+        closeButton: false,
+        closeOnClick: false,
+        className: 'route-popup'
+      })
+      .setLngLat([record.location.lng, record.location.lat])
+      .setHTML(`
+        <div class="p-3 max-w-xs">
+          <div class="flex items-center space-x-2 mb-2">
+            <div class="w-8 h-8 rounded-full overflow-hidden">
+              <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p class="font-semibold text-sm">${record.userName}</p>
+              <p class="text-xs text-gray-500">${record.time || ''}</p>
+            </div>
+          </div>
+          <p class="text-sm mb-2">${record.memo}</p>
+          <div class="flex flex-wrap gap-1">
+            ${record.hashtags.map(tag => `<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">#${tag}</span>`).join('')}
+          </div>
+        </div>
+      `)
+      .addTo(map.current!);
+
+      return popup;
+    };
+
+    let currentPopup = showRecordInfo(firstRecord);
+
     // 경로 생성을 위한 좌표 배열
     const coordinates: [number, number][] = [[firstRecord.location.lng, firstRecord.location.lat]];
     
@@ -414,6 +452,11 @@ const MapContainer = () => {
       const record = myRecords[i];
       coordinates.push([record.location.lng, record.location.lat]);
       
+      // 이전 팝업 제거
+      if (currentPopup) {
+        currentPopup.remove();
+      }
+
       // 마커 이동
       animMarker.setLngLat([record.location.lng, record.location.lat]);
       
@@ -421,8 +464,11 @@ const MapContainer = () => {
       map.current.flyTo({
         center: [record.location.lng, record.location.lat],
         zoom: 16,
-        duration: 2000
+        duration: 3000
       });
+
+      // 새 기록 정보 표시
+      currentPopup = showRecordInfo(record);
 
       // 경로 업데이트
       const pathId = 'animated-path';
@@ -457,29 +503,38 @@ const MapContainer = () => {
             'line-cap': 'round'
           },
           paint: {
-            'line-color': '#ff6b6b',
+            'line-color': '#8b5cf6',
             'line-width': 4,
             'line-opacity': 0.8
           }
         });
       }
 
-      // 잠시 대기
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // 더 오래 대기하여 천천히 보여주기
+      await new Promise(resolve => setTimeout(resolve, 4000));
     }
 
-    // 잠시 경로를 보여준 후 제거
+    // 마지막 팝업도 잠시 보여준 후 제거
+    setTimeout(() => {
+      if (currentPopup) {
+        currentPopup.remove();
+      }
+    }, 3000);
+
+    // 경로를 더 오래 보여준 후 제거
     setTimeout(() => {
       if (map.current?.getLayer('animated-path')) {
         map.current.removeLayer('animated-path');
         map.current.removeSource('animated-path');
       }
-    }, 3000);
+    }, 5000);
 
     // 애니메이션 마커 제거
-    animMarker.remove();
-    setAnimationMarker(null);
-    setIsAnimating(false);
+    setTimeout(() => {
+      animMarker.remove();
+      setAnimationMarker(null);
+      setIsAnimating(false);
+    }, 3000);
   };
 
   const stopFootstepAnimation = () => {
@@ -634,7 +689,7 @@ const MapContainer = () => {
 
           {/* 상단 컨트롤 버튼들 */}
           <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-            {/* 기존 발자국 애니메이션 버튼 */}
+            {/* 수정된 발자국 애니메이션 버튼 */}
             <Button
               onClick={isAnimating ? stopFootstepAnimation : startFootstepAnimation}
               className={`w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 ${
@@ -645,7 +700,7 @@ const MapContainer = () => {
             >
               {isAnimating ? <Square size={16} /> : <Play size={16} />}
               <span className="text-sm font-medium">
-                {isAnimating ? '정지' : '내 발자국'}
+                {isAnimating ? '정지' : '오늘의 경로'}
               </span>
             </Button>
 
