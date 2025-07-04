@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -25,6 +24,7 @@ export interface AppRecord {
   likes: number;
   comments: Comment[];
   isLiked?: boolean;
+  isPublic?: boolean;
   // Extended properties for running and mood
   isRunning?: boolean;
   distance?: number;
@@ -77,6 +77,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 15,
     comments: [],
+    isPublic: true,
     isRunning: true,
     distance: 5.2,
     duration: "32:15",
@@ -105,6 +106,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 8,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'walk',
     time: "06:45"
@@ -120,6 +122,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 12,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "12:30"
@@ -135,6 +138,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 20,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'food',
     time: "19:15"
@@ -150,6 +154,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 18,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'landscape',
     time: "21:00"
@@ -167,6 +172,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 22,
     comments: [],
+    isPublic: true,
     isRunning: true,
     distance: 7.5,
     duration: "45:30",
@@ -192,6 +198,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 15,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'shopping',
     time: "15:30"
@@ -209,6 +216,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 8,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "14:15"
@@ -227,6 +235,7 @@ export const mockRecords: AppRecord[] = [
       { id: "c2", userId: "1", userName: "김다은", content: "여기 파스타 진짜 맛있어요!", createdAt: yesterday },
       { id: "c3", userId: "3", userName: "이주연", content: "다음에 꼭 가봐야겠네요", createdAt: today }
     ],
+    isPublic: true,
     mood: 'smile',
     icon: 'food',
     time: "19:30"
@@ -242,6 +251,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 6,
     comments: [],
+    isPublic: true,
     mood: 'meh',
     icon: 'walk',
     time: "18:45"
@@ -257,6 +267,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 18,
     comments: [],
+    isPublic: true,
     isRunning: true,
     distance: 4.2,
     duration: "28:45",
@@ -281,6 +292,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 23,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'entertainment',
     time: "20:15"
@@ -296,6 +308,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 18,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "15:30"
@@ -313,6 +326,7 @@ export const mockRecords: AppRecord[] = [
     comments: [
       { id: "c4", userId: "5", userName: "박지훈", content: "분위기 진짜 좋네요!", createdAt: twoDaysAgo }
     ],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "16:00"
@@ -328,6 +342,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 14,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "14:45"
@@ -343,6 +358,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 25,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'landscape',
     time: "13:00"
@@ -358,6 +374,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 30,
     comments: [],
+    isPublic: true,
     isRunning: true,
     distance: 6.8,
     duration: "42:20",
@@ -382,6 +399,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 17,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'food',
     time: "18:30"
@@ -397,6 +415,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 24,
     comments: [],
+    isPublic: true,
     mood: 'meh',
     icon: 'walk',
     time: "17:45"
@@ -412,6 +431,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 12,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'shopping',
     time: "16:20"
@@ -427,6 +447,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: threeDaysAgo,
     likes: 28,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'cafe',
     time: "15:00"
@@ -442,6 +463,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 19,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'walk',
     time: "19:00"
@@ -457,6 +479,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 21,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'snack',
     time: "16:45"
@@ -472,6 +495,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: yesterday,
     likes: 16,
     comments: [],
+    isPublic: true,
     mood: 'smile',
     icon: 'entertainment',
     time: "21:30"
@@ -487,6 +511,7 @@ export const mockRecords: AppRecord[] = [
     createdAt: today,
     likes: 26,
     comments: [],
+    isPublic: true,
     isRunning: true,
     distance: 8.3,
     duration: "48:15",
@@ -513,6 +538,7 @@ export const mockRecords: AppRecord[] = [
     comments: [
       { id: "c5", userId: "1", userName: "김다은", content: "힘내요! 언제든 연락해요", createdAt: yesterday }
     ],
+    isPublic: true,
     mood: 'frown',
     icon: 'walk',
     time: "20:30"

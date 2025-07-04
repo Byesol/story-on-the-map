@@ -21,13 +21,13 @@ const Explore = () => {
       
       // 오늘 날짜의 기록만 표시 (24시간 스토리 개념)
       const today = new Date().toISOString().split('T')[0];
-      return record.createdAt === today && record.isPublic !== false; // 공개 기록만
+      return record.createdAt === today && (record.isPublic === undefined || record.isPublic === true);
     });
   }, []);
 
   // 전체 공개 기록 (탐색용)
   const allPublicRecords = useMemo(() => {
-    return mockRecords.filter(record => record.isPublic !== false)
+    return mockRecords.filter(record => record.isPublic === undefined || record.isPublic === true)
       .map(record => {
         const distance = Math.sqrt(
           Math.pow(record.location.lat - CURRENT_USER_LOCATION.lat, 2) +
