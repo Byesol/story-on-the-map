@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -215,39 +214,41 @@ const MapContainer = () => {
       markerEl.className = 'record-marker';
       markerEl.style.transform = `scale(${scaleFactor})`;
       markerEl.style.cursor = 'pointer';
+      markerEl.style.position = 'relative';
+      markerEl.style.zIndex = '2000';
       
       markerEl.innerHTML = `
-        <div class="relative cursor-pointer group">
+        <div class="relative cursor-pointer group" style="z-index: 2000;">
           ${isToday ? `
             <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
             <div class="absolute -inset-1 bg-yellow-300 rounded-full animate-ping opacity-50"></div>
           ` : ''}
           
-          <div class="w-14 h-14 rounded-full overflow-hidden border-3 ${isToday ? 'border-yellow-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200">
+          <div class="w-14 h-14 rounded-full overflow-hidden border-3 ${isToday ? 'border-yellow-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200" style="z-index: 2001;">
             <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
           </div>
           
-          <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+          <div class="absolute -top-2 -right-2 w-8 h-8 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm" style="z-index: 2002;">
             <div class="w-4 h-4 text-gray-600">${getIconSvg(record.icon || 'food')}</div>
           </div>
           
           ${record.mood ? `
-            <div class="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm">
+            <div class="absolute -top-2 -left-2 w-6 h-6 bg-white rounded-full border-2 border-gray-200 flex items-center justify-center shadow-sm" style="z-index: 2002;">
               <div class="w-3 h-3 ${record.mood === 'smile' ? 'text-green-500' : record.mood === 'frown' ? 'text-red-500' : 'text-yellow-500'}">${getMoodIconSvg(record.mood)}</div>
             </div>
           ` : ''}
           
-          <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+          <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-2 border-white flex items-center justify-center" style="z-index: 2002;">
             <span class="text-white text-xs font-bold">${record.likes}</span>
           </div>
           
           ${isToday ? `
-            <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce">
+            <div class="absolute -top-3 -left-1 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold animate-bounce" style="z-index: 2002;">
               TODAY
             </div>
           ` : ''}
           
-          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
+          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm" style="z-index: 2001;">
             ${record.userName}
           </div>
         </div>
@@ -256,7 +257,7 @@ const MapContainer = () => {
       markerEl.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log('Marker clicked:', record.id, record.memo);
+        console.log('Main map marker clicked:', record.id, record.memo);
         setSelectedRecord(record);
       });
 

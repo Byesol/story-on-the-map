@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, MapPin, Navigation, Map, List, Filter } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
@@ -71,7 +70,7 @@ const Explore = () => {
   const popularTags = Array.from(new Set(allRecords.flatMap(record => record.hashtags)))
     .slice(0, 8);
 
-  // 지도 초기화
+  // 지도 초기화 및 정리 로직 개선
   useEffect(() => {
     if (viewMode === 'map' && mapContainer.current && !map.current) {
       mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -92,23 +91,32 @@ const Explore = () => {
       });
     }
 
+    // 뷰 모드가 feed로 변경되면 지도 완전히 정리
+    if (viewMode === 'feed' && map.current) {
+      recordMarkers.forEach(marker => marker.remove());
+      setRecordMarkers([]);
+      map.current.remove();
+      map.current = null;
+      setMapLoaded(false);
+    }
+
     return () => {
-      if (viewMode === 'feed' && map.current) {
+      // 컴포넌트 언마운트 시에만 정리
+      if (map.current) {
         recordMarkers.forEach(marker => marker.remove());
         map.current.remove();
         map.current = null;
-        setMapLoaded(false);
       }
     };
   }, [viewMode]);
 
   // 마커 업데이트
   useEffect(() => {
-    if (mapLoaded && map.current) {
+    if (mapLoaded && map.current && viewMode === 'map') {
       recordMarkers.forEach(marker => marker.remove());
       addRecordMarkers(filteredRecords);
     }
-  }, [filteredRecords, mapLoaded]);
+  }, [filteredRecords, mapLoaded, viewMode]);
 
   const addRecordMarkers = (records: any[]) => {
     if (!map.current) return;
@@ -121,33 +129,38 @@ const Explore = () => {
       const isToday = record.createdAt === today;
       
       const markerEl = document.createElement('div');
-      markerEl.className = 'record-marker cursor-pointer';
+      markerEl.className = 'record-marker';
+      markerEl.style.cursor = 'pointer';
+      markerEl.style.zIndex = '1000';
       
       markerEl.innerHTML = `
-        <div class="relative group">
+        <div class="relative group" style="z-index: 1000;">
           ${isToday ? `
             <div class="absolute -inset-2 bg-yellow-400 rounded-full animate-pulse opacity-30"></div>
           ` : ''}
           
-          <div class="w-12 h-12 rounded-full overflow-hidden border-2 ${isMyRecord ? 'border-blue-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200">
+          <div class="w-12 h-12 rounded-full overflow-hidden border-2 ${isMyRecord ? 'border-blue-400' : 'border-white'} shadow-lg hover:scale-110 transition-transform duration-200" style="z-index: 1001;">
             <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
           </div>
           
-          <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+          <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-red-500 rounded-full border-2 border-white flex items-center justify-center" style="z-index: 1002;">
             <span class="text-white text-xs font-bold">${record.likes}</span>
           </div>
           
           ${isMyRecord ? `
-            <div class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 rounded-full border border-white"></div>
+            <div class="absolute -top-1 -left-1 w-4 h-4 bg-blue-500 rounded-full border border-white" style="z-index: 1002;"></div>
           ` : ''}
           
-          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm">
+          <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs font-bold text-gray-700 bg-white bg-opacity-90 px-2 py-1 rounded whitespace-nowrap shadow-sm" style="z-index: 1001;">
             ${record.userName}
           </div>
         </div>
       `;
 
-      markerEl.addEventListener('click', () => {
+      markerEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Explore marker clicked:', record.id);
         handleRecordClick(record.id);
       });
 
@@ -175,6 +188,10 @@ const Explore = () => {
 
   const today = new Date().toISOString().split('T')[0];
 
+  const handleViewModeChange = (newMode: 'map' | 'feed') => {
+    setViewMode(newMode);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* 헤더 */}
@@ -191,7 +208,7 @@ const Explore = () => {
               <Button
                 variant={viewMode === 'map' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setViewMode('map')}
+                onClick={() => handleViewModeChange('map')}
                 className="flex items-center space-x-1"
               >
                 <Map size={16} />
@@ -200,7 +217,7 @@ const Explore = () => {
               <Button
                 variant={viewMode === 'feed' ? 'default' : 'ghost'}
                 size="sm"
-                onClick={() => setViewMode('feed')}
+                onClick={() => handleViewModeChange('feed')}
                 className="flex items-center space-x-1"
               >
                 <List size={16} />

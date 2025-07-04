@@ -1,4 +1,3 @@
-
 export interface Location {
   lat: number;
   lng: number;
@@ -80,7 +79,7 @@ export const mockRecords: AppRecord[] = [
     userId: "2",
     userName: "이민수",
     location: { lat: 37.5794, lng: 126.9770, address: "서울시 종로구 북촌한옥마을" },
-    image: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&h=300&fit=crop",
+    image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop",
     memo: "북촌한옥마을에서 전통 건축의 아름다움에 감탄했어요 🏠",
     hashtags: ["전통", "한옥", "북촌", "건축"],
     icon: "landscape",
@@ -162,7 +161,7 @@ export const mockRecords: AppRecord[] = [
     userId: "1", 
     userName: "김다은",
     location: { lat: 37.5796, lng: 126.9770, address: "서울시 종로구 경복궁" },
-    image: "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=400&h=300&fit=crop",
+    image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop",
     memo: "경복궁 단풍이 너무 아름다워요 🍁",
     hashtags: ["단풍", "궁궐", "가을", "힐링"],
     icon: "landscape",
@@ -212,7 +211,7 @@ export const mockRecords: AppRecord[] = [
     userId: "3",
     userName: "박지영",
     location: { lat: 37.5636, lng: 126.9675, address: "서울시 중구 명동성당" },
-    image: "https://images.unsplash.com/photo-1520637836862-4d197d17c91a?w=400&h=300&fit=crop",
+    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=300&fit=crop",
     memo: "명동성당의 고요한 분위기에서 마음이 평온해졌어요",
     hashtags: ["힐링", "성당", "명동", "평온"],
     icon: "landscape", 
@@ -383,54 +382,6 @@ export const mockRecords: AppRecord[] = [
     likes: 19,
     comments: [],
     isLiked: true,
-    mood: "smile"
-  },
-  {
-    id: "16",
-    userId: "1",
-    userName: "김다은",
-    location: { lat: 37.5400, lng: 127.0700, address: "서울시 강남구 압구정로데오" },
-    image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
-    memo: "압구정 로데오거리에서 윈도우 쇼핑! 트렌디한 옷들이 너무 많아요",
-    hashtags: ["쇼핑", "압구정", "트렌드", "패션"],
-    icon: "entertainment",
-    createdAt: "2025-01-30",
-    time: "14:30",
-    likes: 17,
-    comments: [],
-    isLiked: false,
-    mood: "smile"
-  },
-  {
-    id: "17",
-    userId: "2",
-    userName: "이민수",
-    location: { lat: 37.5760, lng: 126.9769, address: "서울시 종로구 광화문광장" },
-    image: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=400&h=300&fit=crop",
-    memo: "광화문 광장에서 역사의 무게를 느껴봅니다",
-    hashtags: ["광화문", "역사", "광장", "무게감"],
-    icon: "landscape",
-    createdAt: "2025-02-01",
-    time: "11:15",
-    likes: 6,
-    comments: [],
-    isLiked: false,
-    mood: "meh"
-  },
-  {
-    id: "18",
-    userId: "1",
-    userName: "김다은",
-    location: { lat: 37.5506, lng: 126.9910, address: "서울시 중구 장충동족발골목" },
-    image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop",
-    memo: "장충동 족발골목에서 진짜 맛있는 족발 발견! 소주 한잔과 함께 🍻",
-    hashtags: ["족발", "장충동", "맛집", "소주"],
-    icon: "food",
-    createdAt: "2025-02-03",
-    time: "18:45",
-    likes: 20,
-    comments: [],
-    isLiked: false,
     mood: "smile"
   }
 ];
