@@ -1,19 +1,30 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Navigation } from 'lucide-react';
+import { Plus, Navigation, Route } from 'lucide-react';
 
 interface MapControlsProps {
   onCreateRecord: () => void;
   onMoveToCurrentLocation: () => void;
+  onStartRouteRecord: () => void;
 }
 
 const MapControls: React.FC<MapControlsProps> = ({
   onCreateRecord,
-  onMoveToCurrentLocation
+  onMoveToCurrentLocation,
+  onStartRouteRecord
 }) => {
   return (
     <div className="absolute bottom-24 right-4 flex flex-col space-y-3 z-10">
+      {/* 경로 기록 버튼 */}
+      <Button
+        onClick={onStartRouteRecord}
+        className="w-14 h-14 rounded-full bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        size="sm"
+      >
+        <Route size={24} />
+      </Button>
+      
       {/* 기록 추가 버튼 */}
       <Button
         onClick={onCreateRecord}
