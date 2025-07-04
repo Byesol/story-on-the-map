@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -6,9 +7,9 @@ import { RecordModal } from './RecordModal';
 import { CreateRecordModal } from './CreateRecordModal';
 import { FilterSheet, FilterOptions } from './FilterSheet';
 import MapControls from './MapControls';
-import { Calendar, ChevronLeft, ChevronRight, Play, Square, BarChart3, Filter } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, BarChart3, Filter } from 'lucide-react';
 import BottomNavigation from '@/components/Layout/BottomNavigation';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { StoryMode } from './StoryMode';
 import { DailySummaryCard } from './DailySummaryCard';
@@ -17,20 +18,6 @@ import { useLocationMemory } from '@/hooks/useLocationMemory';
 import { Smile, Frown, Meh } from 'lucide-react';
 
 const MAPBOX_TOKEN = 'pk.eyJ1IjoidmVjdG9yMTIzIiwiYSI6ImNtY2s0bWY3aTBiYWMya29mc3F6dDhudHQifQ.WtT54vDaSOyf-NquVog3FQ';
-
-const iconMap = {
-  food: 'Utensils',
-  travel: 'Plane', 
-  landscape: 'Mountain',
-  cafe: 'Coffee',
-  entertainment: 'Music'
-};
-
-const moodIconMap = {
-  smile: Smile,
-  frown: Frown,
-  meh: Meh
-};
 
 const MapContainer = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -41,11 +28,10 @@ const MapContainer = () => {
   const [userLocationMarker, setUserLocationMarker] = useState<mapboxgl.Marker | null>(null);
   const [recordMarkers, setRecordMarkers] = useState<mapboxgl.Marker[]>([]);
   const [currentZoom, setCurrentZoom] = useState(12);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animationMarker, setAnimationMarker] = useState<mapboxgl.Marker | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(2025);
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
   const location = useLocation();
+  const navigate = useNavigate();
   const [showStoryMode, setShowStoryMode] = useState(false);
   const [showDailySummary, setShowDailySummary] = useState(false);
   
@@ -121,7 +107,6 @@ const MapContainer = () => {
     return () => {
       recordMarkers.forEach(marker => marker.remove());
       userLocationMarker?.remove();
-      animationMarker?.remove();
       if (map.current) {
         map.current.remove();
       }
@@ -229,6 +214,7 @@ const MapContainer = () => {
       const markerEl = document.createElement('div');
       markerEl.className = 'record-marker';
       markerEl.style.transform = `scale(${scaleFactor})`;
+      markerEl.style.cursor = 'pointer';
       
       markerEl.innerHTML = `
         <div class="relative cursor-pointer group">
@@ -267,7 +253,10 @@ const MapContainer = () => {
         </div>
       `;
 
-      markerEl.addEventListener('click', () => {
+      markerEl.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('Marker clicked:', record.id, record.memo);
         setSelectedRecord(record);
       });
 
@@ -279,189 +268,6 @@ const MapContainer = () => {
     });
 
     setRecordMarkers(markers);
-  };
-
-  const startTodaysPathAnimation = async () => {
-    if (!map.current || isAnimating) return;
-
-    setIsAnimating(true);
-    
-    // 내 기록들만 필터링하고 시간순 정렬
-    const myRecords = filteredRecords
-      .filter(record => record.userId === "1")
-      .sort((a, b) => {
-        // 시간이 있으면 시간순으로, 없으면 생성 순서대로
-        if (a.time && b.time) {
-          return a.time.localeCompare(b.time);
-        }
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      });
-
-    if (myRecords.length === 0) {
-      setIsAnimating(false);
-      return;
-    }
-
-    // 시작점으로 카메라 이동
-    const firstRecord = myRecords[0];
-    await new Promise(resolve => {
-      map.current?.flyTo({
-        center: [firstRecord.location.lng, firstRecord.location.lat],
-        zoom: 16,
-        duration: 2000
-      });
-      setTimeout(resolve, 2000);
-    });
-
-    // 애니메이션 마커 생성
-    const animMarkerEl = document.createElement('div');
-    animMarkerEl.innerHTML = `
-      <div class="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full border-3 border-white shadow-lg animate-pulse flex items-center justify-center">
-        <div class="w-4 h-4 bg-white rounded-full"></div>
-      </div>
-    `;
-
-    const animMarker = new mapboxgl.Marker(animMarkerEl)
-      .setLngLat([firstRecord.location.lng, firstRecord.location.lat])
-      .addTo(map.current);
-
-    setAnimationMarker(animMarker);
-
-    // 첫 번째 기록 정보 표시
-    const showRecordInfo = (record: AppRecord) => {
-      const popup = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        className: 'route-popup'
-      })
-      .setLngLat([record.location.lng, record.location.lat])
-      .setHTML(`
-        <div class="p-3 max-w-xs">
-          <div class="flex items-center space-x-2 mb-2">
-            <div class="w-8 h-8 rounded-full overflow-hidden">
-              <img src="${record.image}" alt="${record.memo}" class="w-full h-full object-cover" />
-            </div>
-            <div>
-              <p class="font-semibold text-sm">${record.userName}</p>
-              <p class="text-xs text-gray-500">${record.time || ''}</p>
-            </div>
-          </div>
-          <p class="text-sm mb-2">${record.memo}</p>
-          <div class="flex flex-wrap gap-1">
-            ${record.hashtags.map(tag => `<span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">#${tag}</span>`).join('')}
-          </div>
-        </div>
-      `)
-      .addTo(map.current!);
-
-      return popup;
-    };
-
-    let currentPopup = showRecordInfo(firstRecord);
-
-    // 경로 생성을 위한 좌표 배열
-    const coordinates: [number, number][] = [[firstRecord.location.lng, firstRecord.location.lat]];
-    
-    // 각 기록을 순서대로 방문하며 경로 생성
-    for (let i = 1; i < myRecords.length; i++) {
-      const record = myRecords[i];
-      coordinates.push([record.location.lng, record.location.lat]);
-      
-      // 이전 팝업 제거
-      if (currentPopup) {
-        currentPopup.remove();
-      }
-
-      // 마커 이동
-      animMarker.setLngLat([record.location.lng, record.location.lat]);
-      
-      // 카메라 부드럽게 이동
-      map.current.flyTo({
-        center: [record.location.lng, record.location.lat],
-        zoom: 16,
-        duration: 3000
-      });
-
-      // 새 기록 정보 표시
-      currentPopup = showRecordInfo(record);
-
-      // 경로 업데이트
-      const pathId = 'animated-path';
-      if (map.current.getSource(pathId)) {
-        (map.current.getSource(pathId) as mapboxgl.GeoJSONSource).setData({
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: coordinates
-          }
-        });
-      } else {
-        map.current.addSource(pathId, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: coordinates
-            }
-          }
-        });
-
-        map.current.addLayer({
-          id: pathId,
-          type: 'line',
-          source: pathId,
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#8b5cf6',
-            'line-width': 4,
-            'line-opacity': 0.8
-          }
-        });
-      }
-
-      // 더 오래 대기하여 천천히 보여주기
-      await new Promise(resolve => setTimeout(resolve, 4000));
-    }
-
-    // 마지막 팝업도 잠시 보여준 후 제거
-    setTimeout(() => {
-      if (currentPopup) {
-        currentPopup.remove();
-      }
-    }, 3000);
-
-    // 경로를 더 오래 보여준 후 제거
-    setTimeout(() => {
-      if (map.current?.getLayer('animated-path')) {
-        map.current.removeLayer('animated-path');
-        map.current.removeSource('animated-path');
-      }
-    }, 5000);
-
-    // 애니메이션 마커 제거
-    setTimeout(() => {
-      animMarker.remove();
-      setAnimationMarker(null);
-      setIsAnimating(false);
-    }, 3000);
-  };
-
-  const stopTodaysPathAnimation = () => {
-    if (animationMarker) {
-      animationMarker.remove();
-      setAnimationMarker(null);
-    }
-    if (map.current?.getLayer('animated-path')) {
-      map.current.removeLayer('animated-path');
-      map.current.removeSource('animated-path');
-    }
-    setIsAnimating(false);
   };
 
   const moveToCurrentLocation = () => {
@@ -507,6 +313,14 @@ const MapContainer = () => {
 
   const handleFilterChange = (newFilterOptions: FilterOptions) => {
     setFilterOptions(newFilterOptions);
+  };
+
+  const handleModalClose = () => {
+    setSelectedRecord(null);
+    // URL에서 recordId 파라미터 제거
+    if (selectedRecordId) {
+      navigate('/', { replace: true });
+    }
   };
 
   return (
@@ -572,22 +386,7 @@ const MapContainer = () => {
 
           {/* 상단 컨트롤 버튼들 */}
           <div className="absolute top-4 right-4 flex flex-col space-y-2 z-10">
-            {/* 오늘의 경로 버튼 */}
-            <Button
-              onClick={isAnimating ? stopTodaysPathAnimation : startTodaysPathAnimation}
-              className={`w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 ${
-                isAnimating 
-                  ? 'bg-red-500 hover:bg-red-600' 
-                  : 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600'
-              }`}
-            >
-              {isAnimating ? <Square size={16} /> : <Play size={16} />}
-              <span className="text-sm font-medium">
-                {isAnimating ? '정지' : '오늘의 경로'}
-              </span>
-            </Button>
-
-            {/* 스토리 모드 버튼 */}
+            {/* 오늘 스토리 버튼 */}
             <Button
               onClick={() => setShowStoryMode(true)}
               className="w-auto px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
@@ -614,7 +413,7 @@ const MapContainer = () => {
           <RecordModal 
             record={selectedRecord}
             isOpen={!!selectedRecord}
-            onClose={() => setSelectedRecord(null)}
+            onClose={handleModalClose}
             onUpdateRecord={updateRecordInList}
             onAuthorFilter={() => {}}
           />
