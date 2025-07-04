@@ -9,6 +9,7 @@ import MyRecords from "./pages/MyRecords";
 import Profile from "./pages/Profile";
 import Friends from "./pages/Friends";
 import Explore from "./pages/Explore";
+import Stats from "./pages/Stats";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,8 +22,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/explore" element={<Explore />} />
           <Route path="/my-records" element={<MyRecords />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="/explore" element={<Explore />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/profile" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
